@@ -4,18 +4,27 @@
   "main": "index.js",
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web"
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "web": "expo start --web",
+    "backend": "node backend/server.js",
+    "dev": "concurrently -k \"npm run backend\" \"npm run start\""
   },
   "dependencies": {
+    "@expo/metro-runtime": "~5.0.4",
+    "cors": "^2.8.5",
     "expo": "~53.0.9",
     "expo-status-bar": "~2.2.3",
+    "express": "^5.1.0",
+    "pg": "^8.16.0",
     "react": "19.0.0",
-    "react-native": "0.79.2"
+    "react-dom": "19.0.0",
+    "react-native": "0.79.2",
+    "react-native-web": "^0.20.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.20.0"
+    "@babel/core": "^7.20.0",
+    "concurrently": "^9.1.2"
   },
   "private": true
 }
