@@ -1,19 +1,52 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, View } from 'react-native';
-import HomeScreen from './screens/HomeScreen';  // importa tu HomeScreen
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-export default function App() {
+import { AuthProvider, useAuth } from './context/AuthContext';
+
+import LoginScreen from './screens/LoginScreen';
+import RegisterScreen from './screens/RegisterScreen';
+import AdminHomeScreen from './screens/AdminHomeScreen';
+import ClienteHomeScreen from './screens/ClienteHomeScreen';
+import VehiculosScreen from './screens/VehiculosScreen';
+
+const Stack = createNativeStackNavigator();
+
+function AppRoutes() {
+  const { user, loading } = useAuth();
+
+  if (loading) return null; // splash o loading indicator
+
   return (
-    <View style={styles.container}>
-      <HomeScreen />
-      <StatusBar style="auto" />
-    </View>
+    <Stack.Navigator screenOptions={{ headerShown: true }}>
+      {user ? (
+        user.rol === 'administrador' ? (
+          <>
+            <Stack.Screen name="AdminHome" component={AdminHomeScreen} />
+            <Stack.Screen name="Vehiculos" component={VehiculosScreen} />
+          </>
+        ) : (
+          <>
+            <Stack.Screen name="ClienteHome" component={ClienteHomeScreen} />
+            <Stack.Screen name="Vehiculos" component={VehiculosScreen} />
+          </>
+        )
+      ) : (
+        <>
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="Register" component={RegisterScreen} />
+        </>
+      )}
+    </Stack.Navigator>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-});
+export default function App() {
+  return (
+    <AuthProvider>
+      <NavigationContainer>
+        <AppRoutes />
+      </NavigationContainer>
+    </AuthProvider>
+  );
+}
