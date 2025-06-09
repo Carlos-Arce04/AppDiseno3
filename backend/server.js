@@ -1,4 +1,5 @@
 // backend/server.js
+
 const express = require('express');
 const cors = require('cors');
 const { Pool } = require('pg');
@@ -9,19 +10,18 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const JWT_SECRET = 'qwerty12345!@#ASDFGH67890%^&*ZXCVBNM'; // Usa variable de entorno en producción
+const JWT_SECRET = 'qwerty12345!@#ASDFGH67890%^&*ZXCVBNM';
 
 const pool = new Pool({
   connectionString: 'postgresql://postgres:CinlcUvwPoXsKyKqsUyaqVNPqXsJbYIZ@shuttle.proxy.rlwy.net:54698/railway',
   ssl: { rejectUnauthorized: false },
 });
 
-// Middleware para validar token y asignar req.user
+// Middleware de autenticación
 function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
+  const token      = authHeader && authHeader.split(' ')[1];
   if (!token) return res.status(401).json({ error: 'Token requerido' });
-
   jwt.verify(token, JWT_SECRET, (err, user) => {
     if (err) return res.status(403).json({ error: 'Token inválido' });
     req.user = user;
@@ -29,175 +29,306 @@ function authenticateToken(req, res, next) {
   });
 }
 
-// Registro usuario
+// --- Usuarios ---
 app.post('/api/register', async (req, res) => {
   const { cedula, nombre, telefono, correo, contrasena, rol = 'cliente' } = req.body;
-  if (!cedula || !nombre || !telefono || !correo || !contrasena) {
-    return res.status(400).json({ error: 'Todos los campos son obligatorios' });
-  }
-  if (!['cliente', 'administrador'].includes(rol)) {
-    return res.status(400).json({ error: 'Rol inválido' });
-  }
+  if (!cedula || !nombre || !telefono || !correo || !contrasena)
+    return res.status(400).json({ error: 'Faltan campos' });
+  if (!['cliente','administrador'].includes(rol))
+    return res.status(400).json({ error:'Rol inválido' });
   try {
     const hash = await bcrypt.hash(contrasena, 10);
-    const query = `
-      INSERT INTO usuarios (cedula, nombre, telefono, correo, contrasena, rol)
-      VALUES ($1, $2, $3, $4, $5, $6)
-      RETURNING cedula, nombre, correo, rol
+    const q = `
+      INSERT INTO usuarios(cedula,nombre,telefono,correo,contrasena,rol)
+      VALUES($1,$2,$3,$4,$5,$6)
+      RETURNING cedula,nombre,correo,rol
     `;
-    const values = [cedula, nombre, telefono, correo, hash, rol];
-    const result = await pool.query(query, values);
-    res.status(201).json({
-      mensaje: 'Usuario registrado correctamente',
-      usuario: result.rows[0],
-    });
-  } catch (error) {
-    if (error.code === '23505') {
-      return res.status(409).json({ error: 'Cédula o correo ya registrados' });
-    }
-    if (error.code === '23514') {
-      return res.status(400).json({ error: 'Formato inválido en uno de los campos' });
-    }
-    res.status(500).json({ error: 'Error en el servidor' });
+    const vals = [cedula,nombre,telefono,correo,hash,rol];
+    const { rows } = await pool.query(q, vals);
+    res.status(201).json({ mensaje:'Usuario registrado', usuario:rows[0] });
+  } catch (err) {
+    if (err.code==='23505')
+      return res.status(409).json({ error:'Cédula o correo ya registrados' });
+    res.status(500).json({ error:'Error en el servidor' });
   }
 });
 
-// Login usuario y creación de JWT
 app.post('/api/login', async (req, res) => {
   const { cedula, contrasena } = req.body;
-  if (!cedula || !contrasena) {
-    return res.status(400).json({ error: 'Cédula y contraseña son requeridos' });
-  }
+  if (!cedula || !contrasena)
+    return res.status(400).json({ error:'Cédula y contraseña requeridos' });
   try {
-    const query = 'SELECT cedula, nombre, correo, contrasena, rol FROM usuarios WHERE cedula = $1';
-    const result = await pool.query(query, [cedula]);
-    if (result.rows.length === 0) {
-      return res.status(401).json({ error: 'Cédula no encontrada' });
-    }
-    const usuario = result.rows[0];
-    const validPassword = await bcrypt.compare(contrasena, usuario.contrasena);
-    if (!validPassword) {
-      return res.status(401).json({ error: 'Contraseña incorrecta' });
-    }
-    const { contrasena: _, ...usuarioSinContrasena } = usuario;
-    const token = jwt.sign(
-      { cedula: usuario.cedula, rol: usuario.rol },
-      JWT_SECRET,
-      { expiresIn: '8h' }
+    const { rows } = await pool.query(
+      'SELECT cedula,nombre,correo,contrasena,rol FROM usuarios WHERE cedula=$1',
+      [cedula]
     );
-    res.json({
-      mensaje: 'Inicio de sesión exitoso',
-      usuario: usuarioSinContrasena,
-      token,
-    });
-  } catch (error) {
-    res.status(500).json({ error: 'Error en el servidor' });
+    if (rows.length===0)
+      return res.status(401).json({ error:'Cédula no encontrada' });
+
+    const user = rows[0];
+    const valid = await bcrypt.compare(contrasena, user.contrasena);
+    if (!valid) return res.status(401).json({ error:'Contraseña incorrecta' });
+
+    const { contrasena:_, ...userData } = user;
+    const token = jwt.sign(
+      { cedula:userData.cedula, rol:userData.rol },
+      JWT_SECRET,
+      { expiresIn:'8h' }
+    );
+    res.json({ mensaje:'Login exitoso', usuario:userData, token });
+  } catch (err) {
+    res.status(500).json({ error:'Error en el servidor' });
   }
 });
 
-// Obtener lista de usuarios (solo para admins)
 app.get('/api/usuarios', authenticateToken, async (req, res) => {
+  if (req.user.rol!=='administrador')
+    return res.status(403).json({ error:'No autorizado' });
   try {
-    if (req.user.rol !== 'administrador') {
-      return res.status(403).json({ error: 'No autorizado' });
-    }
-    const result = await pool.query('SELECT cedula, nombre FROM usuarios ORDER BY nombre ASC');
-    res.json(result.rows);
-  } catch (error) {
-    res.status(500).json({ error: 'Error obteniendo usuarios' });
+    const { rows } = await pool.query('SELECT cedula,nombre FROM usuarios ORDER BY nombre');
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error:'Error obteniendo usuarios' });
   }
 });
 
-
-// GET vehículos
+// --- Vehículos ---
 app.get('/api/vehiculos', authenticateToken, async (req, res) => {
+  const { rol, cedula } = req.user;
   try {
-    const { rol, cedula } = req.user;
-    let query, params;
-    if (rol === 'administrador') {
-      query = 'SELECT * FROM vehiculos ORDER BY fecha_registro DESC';
-      params = [];
+    let q, vals;
+    if (rol==='administrador') {
+      q = 'SELECT * FROM vehiculos ORDER BY fecha_registro DESC';
+      vals = [];
     } else {
-      query = 'SELECT * FROM vehiculos WHERE propietario_cedula = $1 ORDER BY fecha_registro DESC';
-      params = [cedula];
+      q = 'SELECT * FROM vehiculos WHERE propietario_cedula=$1 ORDER BY fecha_registro DESC';
+      vals = [cedula];
     }
-    const result = await pool.query(query, params);
-    res.json(result.rows);
-  } catch (error) {
-    res.status(500).json({ error: 'Error obteniendo vehículos' });
+    const { rows } = await pool.query(q, vals);
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error:'Error obteniendo vehículos' });
   }
 });
 
-// POST crear vehículo
 app.post('/api/vehiculos', authenticateToken, async (req, res) => {
   const { rol, cedula } = req.user;
   const { placa, marca, modelo, propietario_cedula } = req.body;
-  if (!placa || !marca || !modelo) {
-    return res.status(400).json({ error: 'Faltan datos obligatorios' });
-  }
-  const propietarioFinal = rol === 'administrador' ? (propietario_cedula || cedula) : cedula;
+  if (!placa||!marca||!modelo)
+    return res.status(400).json({ error:'Faltan datos' });
+  const owner = rol==='administrador' ? (propietario_cedula||cedula) : cedula;
   try {
-    const query = `
-      INSERT INTO vehiculos (placa, marca, modelo, propietario_cedula)
-      VALUES ($1, $2, $3, $4)
-      RETURNING *
-    `;
-    const result = await pool.query(query, [placa, marca, modelo, propietarioFinal]);
-    res.status(201).json(result.rows[0]);
-  } catch (error) {
-    if (error.code === '23505') {
-      return res.status(409).json({ error: 'Ya existe un vehículo con esa placa' });
-    }
-    res.status(500).json({ error: 'Error insertando vehículo' });
+    const { rows } = await pool.query(
+      'INSERT INTO vehiculos(placa,marca,modelo,propietario_cedula) VALUES($1,$2,$3,$4) RETURNING *',
+      [placa,marca,modelo,owner]
+    );
+    res.status(201).json(rows[0]);
+  } catch (err) {
+    if (err.code==='23505')
+      return res.status(409).json({ error:'Vehículo ya existe' });
+    res.status(500).json({ error:'Error insertando vehículo' });
   }
 });
 
-// PUT actualizar vehículo
 app.put('/api/vehiculos/:placa', authenticateToken, async (req, res) => {
-  console.log('PUT /api/vehiculos/:placa llamada con placa:', req.params.placa);
   const { rol, cedula } = req.user;
-  const { placa } = req.params;
+  const placa = req.params.placa;
   const { marca, modelo } = req.body;
-  if (!marca || !modelo) {
-    return res.status(400).json({ error: 'Marca y modelo son obligatorios' });
-  }
+  if (!marca||!modelo)
+    return res.status(400).json({ error:'Marca y modelo obligatorios' });
   try {
-    const vehiculo = await pool.query('SELECT propietario_cedula FROM vehiculos WHERE placa = $1', [placa]);
-    if (vehiculo.rows.length === 0) {
-      return res.status(404).json({ error: 'Vehículo no encontrado' });
-    }
-    const propietario = vehiculo.rows[0].propietario_cedula;
-    if (rol === 'cliente' && propietario !== cedula) {
-      return res.status(403).json({ error: 'No autorizado para modificar este vehículo' });
-    }
-    await pool.query('UPDATE vehiculos SET marca = $1, modelo = $2 WHERE placa = $3', [marca, modelo, placa]);
-    res.json({ mensaje: 'Vehículo actualizado correctamente' });
-  } catch (error) {
-    res.status(500).json({ error: 'Error actualizando vehículo' });
+    const { rows } = await pool.query(
+      'SELECT propietario_cedula FROM vehiculos WHERE placa=$1',
+      [placa]
+    );
+    if (!rows.length) return res.status(404).json({ error:'Vehículo no encontrado' });
+    if (rol==='cliente' && rows[0].propietario_cedula!==cedula)
+      return res.status(403).json({ error:'No autorizado' });
+
+    await pool.query(
+      'UPDATE vehiculos SET marca=$1,modelo=$2 WHERE placa=$3',
+      [marca,modelo,placa]
+    );
+    res.json({ mensaje:'Vehículo actualizado' });
+  } catch (err) {
+    res.status(500).json({ error:'Error actualizando vehículo' });
   }
 });
 
-// DELETE vehículo
 app.delete('/api/vehiculos/:placa', authenticateToken, async (req, res) => {
   const { rol, cedula } = req.user;
-  const { placa } = req.params;
+  const placa = req.params.placa;
   try {
-    const vehiculo = await pool.query('SELECT propietario_cedula FROM vehiculos WHERE placa = $1', [placa]);
-    if (vehiculo.rows.length === 0) {
-      return res.status(404).json({ error: 'Vehículo no encontrado' });
-    }
-    const propietario = vehiculo.rows[0].propietario_cedula;
-    if (rol === 'cliente' && propietario !== cedula) {
-      return res.status(403).json({ error: 'No autorizado para eliminar este vehículo' });
-    }
-    await pool.query('DELETE FROM vehiculos WHERE placa = $1', [placa]);
-    res.json({ mensaje: 'Vehículo eliminado correctamente' });
-  } catch (error) {
-    res.status(500).json({ error: 'Error eliminando vehículo' });
+    const { rows } = await pool.query(
+      'SELECT propietario_cedula FROM vehiculos WHERE placa=$1',
+      [placa]
+    );
+    if (!rows.length) return res.status(404).json({ error:'Vehículo no encontrado' });
+    if (rol==='cliente' && rows[0].propietario_cedula!==cedula)
+      return res.status(403).json({ error:'No autorizado' });
+
+    await pool.query('DELETE FROM vehiculos WHERE placa=$1',[placa]);
+    res.json({ mensaje:'Vehículo eliminado' });
+  } catch (err) {
+    res.status(500).json({ error:'Error eliminando vehículo' });
   }
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Servidor backend corriendo en puerto ${PORT}`);
+// --- Repuestos ---
+app.get('/api/repuestos', authenticateToken, async (req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT id,nombre,precio FROM Repuestos ORDER BY id');
+    res.json(rows);
+  } catch (err) {
+    res.status(500).json({ error:'Error obteniendo repuestos' });
+  }
 });
+
+app.post('/api/repuestos', authenticateToken, async (req, res) => {
+  if (req.user.rol!=='administrador')
+    return res.status(403).json({ error:'No autorizado' });
+  const { id, nombre, precio } = req.body;
+  if (id==null||!nombre||precio==null)
+    return res.status(400).json({ error:'Faltan campos' });
+  try {
+    const { rows } = await pool.query(
+      'INSERT INTO Repuestos(id,nombre,precio) VALUES($1,$2,$3) RETURNING *',
+      [id,nombre,precio]
+    );
+    res.status(201).json({ mensaje:'Repuesto creado', repuesto:rows[0] });
+  } catch (err) {
+    if (err.code==='23505')
+      return res.status(409).json({ error:'ID ya existe' });
+    res.status(500).json({ error:err.message });
+  }
+});
+
+// --- Reparaciones (detalle precios) ---
+app.get('/api/reparaciones', authenticateToken, async (req, res) => {
+  try {
+    const { rows } = await pool.query(`
+      SELECT pr.id, pr.repuesto_id,
+             rp.nombre    AS repuesto_nombre,
+             pr.cantidad, pr.mano_de_obra,
+             pr.total, pr.fecha
+      FROM PrecioReparacion pr
+      JOIN Repuestos rp ON rp.id = pr.repuesto_id
+      ORDER BY pr.fecha DESC
+    `);
+    res.json(rows);
+  } catch (err) {
+    console.error('Error cargando reparaciones:', err);
+    res.status(500).json({ error:'Error cargando reparaciones' });
+  }
+});
+
+app.post('/api/reparaciones', authenticateToken, async (req, res) => {
+  if (req.user.rol!=='administrador')
+    return res.status(403).json({ error:'No autorizado' });
+  const { repuesto_id, cantidad, mano_de_obra } = req.body;
+  if (!repuesto_id||!cantidad||mano_de_obra==null)
+    return res.status(400).json({ error:'Faltan campos requeridos' });
+  try {
+    const { rows } = await pool.query(
+      'INSERT INTO PrecioReparacion(repuesto_id,cantidad,mano_de_obra) VALUES($1,$2,$3) RETURNING *', 
+      [repuesto_id,cantidad,mano_de_obra]
+    );
+    res.status(201).json(rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error:err.message });
+  }
+});
+
+// --- Revisiones (usa vw_revision_detalle) ---
+app.get('/api/revision', authenticateToken, async (req, res) => {
+  const { rol, cedula } = req.user;
+  try {
+    let sql  = 'SELECT * FROM vw_revision_detalle';
+    const vals = [];
+    if (rol!=='administrador') {
+      sql    += ' WHERE placa IN (SELECT placa FROM vehiculos WHERE propietario_cedula=$1)';
+      vals.push(cedula);
+    }
+    sql += ' ORDER BY fecha_revision DESC';
+    const { rows } = await pool.query(sql, vals);
+    res.json(rows);
+  } catch (err) {
+    console.error('Error en GET /api/revision:', err);
+    res.status(500).json({ error:err.message });
+  }
+});
+
+app.get('/api/revision/:id', authenticateToken, async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  try {
+    const { rows } = await pool.query(
+      'SELECT * FROM vw_revision_detalle WHERE id=$1',
+      [id]
+    );
+    if (!rows.length) return res.status(404).json({ error:'Revisión no encontrada' });
+    res.json(rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error:err.message });
+  }
+});
+
+app.post('/api/revision', authenticateToken, async (req, res) => {
+  if (req.user.rol!=='administrador')
+    return res.status(403).json({ error:'No autorizado' });
+  const { placa, mecanico, detalle_averia } = req.body;
+  if (!placa||!mecanico||!detalle_averia)
+    return res.status(400).json({ error:'Faltan campos' });
+  try {
+    const { rows } = await pool.query(
+      'INSERT INTO revision(placa,mecanico,detalle_averia) VALUES($1,$2,$3) RETURNING *',
+      [placa,mecanico,detalle_averia]
+    );
+    res.status(201).json(rows[0]);
+  } catch (err) {
+    res.status(500).json({ error:err.message });
+  }
+});
+
+app.post('/api/revision/:id/repuestos', authenticateToken, async (req, res) => {
+  if (req.user.rol!=='administrador')
+    return res.status(403).json({ error:'No autorizado' });
+  const revId = parseInt(req.params.id,10);
+  const { precio_reparacion_id } = req.body;
+  if (!precio_reparacion_id)
+    return res.status(400).json({ error:'Falta precio_reparacion_id' });
+  try {
+    await pool.query(
+      'INSERT INTO revision_repuestos(revision_id,precio_reparacion_id) VALUES($1,$2)',
+      [revId,precio_reparacion_id]
+    );
+    res.sendStatus(201);
+  } catch (err) {
+    res.status(500).json({ error:err.message });
+  }
+});
+
+app.put('/api/revision/:id', authenticateToken, async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  const { estado, respuesta_cliente } = req.body;
+  try {
+    const { rows } = await pool.query(
+      `UPDATE revision
+         SET estado=$1,
+             respuesta_cliente=$2
+       WHERE id=$3
+       RETURNING *`,
+      [estado, respuesta_cliente, id]
+    );
+    if (!rows.length) return res.status(404).json({ error:'Revisión no encontrada' });
+    res.json(rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error:err.message });
+  }
+});
+
+// Arranca servidor
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`🚀 Servidor corriendo en puerto ${PORT}`));
