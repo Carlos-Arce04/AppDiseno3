@@ -24,7 +24,7 @@ export default function LoginScreen({ navigation }) {
     }
 
     try {
-        const response = await axios.post('http://192.168.1.173:3000/api/login', {
+        const response = await axios.post('http://192.168.0.18:3000/api/login', {
         cedula,
         contrasena,
         });

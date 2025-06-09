@@ -27,7 +27,7 @@ export default function VehiculosScreen() {
   const [propietarioSeleccionado, setPropietarioSeleccionado] = useState(""); // cadena vacía para evitar warning
   const [editing, setEditing] = useState(false);
 
-  const API_URL = 'http://192.168.1.173:3000/api/vehiculos';
+  const API_URL = 'http://192.168.0.18:3000/api/vehiculos';
 
   useEffect(() => {
     fetchVehiculos();
