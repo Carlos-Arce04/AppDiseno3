@@ -1,3 +1,4 @@
+// frontend/context/AuthContext.js
 import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
@@ -9,6 +10,7 @@ export function AuthProvider({ children }) {
   const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Al cargar la app, leemos token y usuario almacenados
   useEffect(() => {
     async function loadStorage() {
       const storedToken = await AsyncStorage.getItem('token');
@@ -22,6 +24,7 @@ export function AuthProvider({ children }) {
     loadStorage();
   }, []);
 
+  // Función de login: guarda token y datos de usuario
   const login = async (userData, token) => {
     setUser(userData);
     setToken(token);
@@ -29,6 +32,7 @@ export function AuthProvider({ children }) {
     await AsyncStorage.setItem('user', JSON.stringify(userData));
   };
 
+  // Función de logout: limpia almacenamiento
   const logout = async () => {
     setUser(null);
     setToken(null);
@@ -36,23 +40,20 @@ export function AuthProvider({ children }) {
     await AsyncStorage.removeItem('user');
   };
 
-  // Crea una instancia de axios que APUNTE directamente a tu backend Express
+  // Instancia axios apuntando a tu backend Express
   const axiosAuth = useMemo(() => axios.create({
-    baseURL: 'http://192.168.1.173:3000', // <<<<<<<< Asegúrate que esta IP y puerto sea la del backend Express
+    baseURL: 'http://172.24.115.241:3000',  // Asegúrate que esta IP y puerto coincidan
   }), []);
 
-  // Agrega el token a todas las peticiones
+  // Interceptor para agregar el token a cada solicitud
   useEffect(() => {
-    const interceptor = axiosAuth.interceptors.request.use((config) => {
+    const interceptor = axiosAuth.interceptors.request.use(config => {
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
       return config;
     });
-
-    return () => {
-      axiosAuth.interceptors.request.eject(interceptor);
-    };
+    return () => axiosAuth.interceptors.request.eject(interceptor);
   }, [token, axiosAuth]);
 
   return (
@@ -62,4 +63,5 @@ export function AuthProvider({ children }) {
   );
 }
 
+// Hook para usar el contexto de autenticación
 export const useAuth = () => useContext(AuthContext);

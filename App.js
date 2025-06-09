@@ -1,3 +1,4 @@
+// App.js
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -9,13 +10,17 @@ import RegisterScreen from './screens/RegisterScreen';
 import AdminHomeScreen from './screens/AdminHomeScreen';
 import ClienteHomeScreen from './screens/ClienteHomeScreen';
 import VehiculosScreen from './screens/VehiculosScreen';
+import AgregarRepuestoScreen from './screens/AgregarRepuestoScreen';
+import AgregarReparacionScreen from './screens/AgregarReparacionScreen';
+import AdminCrearRevisionScreen from './screens/AdminCrearRevisionScreen';
+import ClienteRevisionScreen from './screens/ClienteRevisionScreen';
+import NotificacionesScreen from './screens/NotificacionesScreen';
 
 const Stack = createNativeStackNavigator();
 
 function AppRoutes() {
   const { user, loading } = useAuth();
-
-  if (loading) return null; // splash o loading indicator
+  if (loading) return null;
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: true }}>
@@ -24,11 +29,36 @@ function AppRoutes() {
           <>
             <Stack.Screen name="AdminHome" component={AdminHomeScreen} />
             <Stack.Screen name="Vehiculos" component={VehiculosScreen} />
+            <Stack.Screen
+              name="AgregarRepuesto"
+              component={AgregarRepuestoScreen}
+              options={{ title: 'Agregar Repuesto' }}
+            />
+            <Stack.Screen
+              name="AgregarReparacion"
+              component={AgregarReparacionScreen}
+              options={{ title: 'Registrar Reparación' }}
+            />
+            <Stack.Screen
+              name="CrearRevision"
+              component={AdminCrearRevisionScreen}
+              options={{ title: 'Nueva Revisión' }}
+            />
           </>
         ) : (
           <>
             <Stack.Screen name="ClienteHome" component={ClienteHomeScreen} />
             <Stack.Screen name="Vehiculos" component={VehiculosScreen} />
+            <Stack.Screen
+              name="Notificaciones"
+              component={NotificacionesScreen}
+              options={{ title: 'Notificaciones' }}
+            />
+            <Stack.Screen
+              name="Revision"
+              component={ClienteRevisionScreen}
+              options={{ title: 'Detalle Revisión' }}
+            />
           </>
         )
       ) : (
