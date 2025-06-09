@@ -40,9 +40,9 @@ export function AuthProvider({ children }) {
     await AsyncStorage.removeItem('user');
   };
 
-  // Instancia axios apuntando a tu backend Express
+  // Crea una instancia de axios que APUNTE directamente a tu backend Express
   const axiosAuth = useMemo(() => axios.create({
-    baseURL: 'http://172.24.115.241:3000',  // Asegúrate que esta IP y puerto coincidan
+    baseURL: 'http://192.168.1.173:3000', // <<<<<<<< Asegúrate que esta IP y puerto sea la del backend Express
   }), []);
 
   // Interceptor para agregar el token a cada solicitud

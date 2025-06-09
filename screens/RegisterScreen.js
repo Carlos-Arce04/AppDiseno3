@@ -21,7 +21,7 @@ export default function HomeScreen() {
     }
 
     try {
-      const response = await axios.post('http://172.24.115.241:3000/api/register', {
+      const response = await axios.post('http://192.168.1.173:3000/api/register', {
         cedula,
         nombre,
         telefono,
