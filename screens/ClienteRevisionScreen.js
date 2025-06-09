@@ -1,32 +1,36 @@
 // frontend/screens/ClienteRevisionScreen.js
+
 import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
-  ScrollView,
   Button,
   StyleSheet,
-  ActivityIndicator,
-  Alert
+  Alert,
+  ActivityIndicator
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
 
 export default function ClienteRevisionScreen({ route, navigation }) {
-  const { axiosAuth } = useAuth();
-  const { id } = route.params;
+  // Aceptamos tanto route.params.revisionId como route.params.id
+  const revisionId = route.params?.revisionId ?? route.params?.id;
 
+  const { axiosAuth } = useAuth();
   const [revision, setRevision] = useState(null);
-  const [loading, setLoading]     = useState(true);
-  const [updating, setUpdating]   = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const fetchRevision = async () => {
+    if (!revisionId) {
+      Alert.alert('Error', 'No se recibió el ID de la revisión.');
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
-      const res = await axiosAuth.get(`/api/revision/${id}`);
+      const res = await axiosAuth.get(`/api/revision/${revisionId}`);
       setRevision(res.data);
-    } catch (e) {
-      Alert.alert('Error', 'No se pudo cargar la revisión');
-      navigation.goBack();
+    } catch {
+      Alert.alert('Error', 'No se pudo cargar la revisión.');
     } finally {
       setLoading(false);
     }
@@ -37,122 +41,93 @@ export default function ClienteRevisionScreen({ route, navigation }) {
   }, []);
 
   const handleDecision = async (decision) => {
-    let newEstado;
-    switch (decision) {
-      case 'continuar':
-        newEstado = 'reparacion';
-        break;
-      case 'rechazar':
-        newEstado = 'cancelado';
-        break;
-      case 'espera':
-        newEstado = 'en_espera';
-        break;
-      default:
-        return;
-    }
+    // Solo "continuar" y "rechazar" disparan el patch
+    let nuevoEstado;
+    if (decision === 'continuar')      nuevoEstado = 'reparacion';
+    else if (decision === 'rechazar')  nuevoEstado = 'cancelado';
+    else return;  // en_espera no modifica nada
 
     try {
-      setUpdating(true);
-      await axiosAuth.put(`/api/revision/${id}`, {
-        estado: newEstado,
+      await axiosAuth.patch(`/api/revision/${revisionId}`, {
+        estado: nuevoEstado,
         respuesta_cliente: true
       });
-      Alert.alert('Listo', 'Tu decisión ha sido registrada');
-      fetchRevision();
-    } catch (e) {
-      Alert.alert('Error', 'No se pudo actualizar el estado');
-    } finally {
-      setUpdating(false);
+      Alert.alert('Gracias', 'Tu decisión ha sido registrada');
+      fetchRevision();  // refresca y ahora respuesta_cliente === true
+    } catch {
+      Alert.alert('Error', 'No se pudo registrar tu decisión.');
     }
   };
 
   if (loading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" />
-      </View>
-    );
+    return <ActivityIndicator style={{ flex:1, justifyContent:'center' }} />;
+  }
+  if (!revision) {
+    return <Text style={{ padding:20 }}>Revisión no encontrada</Text>;
   }
 
-  const {
-    placa,
-    mecanico,
-    detalle_averia,
-    estado,
-    fecha_revision,
-    repuestos_usados = []
-  } = revision;
-
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>Revisión #{id}</Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>Revisión #{revision.id}</Text>
 
-      <Text style={styles.label}>Placa:</Text>
-      <Text style={styles.value}>{placa}</Text>
+      <View style={styles.field}>
+        <Text style={styles.label}>Placa:</Text>
+        <Text>{revision.placa}</Text>
+      </View>
+      <View style={styles.field}>
+        <Text style={styles.label}>Mecánico a cargo:</Text>
+        <Text>{revision.mecanico}</Text>
+      </View>
+      <View style={styles.field}>
+        <Text style={styles.label}>Detalle de avería:</Text>
+        <Text>{revision.detalle_averia}</Text>
+      </View>
+      <View style={styles.field}>
+        <Text style={styles.label}>Estado:</Text>
+        <Text>{revision.estado}</Text>
+      </View>
+      <View style={styles.field}>
+        <Text style={styles.label}>Fecha:</Text>
+        <Text>{new Date(revision.fecha_revision).toLocaleString()}</Text>
+      </View>
 
-      <Text style={styles.label}>Mecánico a cargo:</Text>
-      <Text style={styles.value}>{mecanico}</Text>
-
-      <Text style={styles.label}>Detalle de avería:</Text>
-      <Text style={styles.value}>{detalle_averia}</Text>
-
-      <Text style={styles.label}>Estado:</Text>
-      <Text style={styles.value}>{estado}</Text>
-
-      <Text style={styles.label}>Fecha:</Text>
-      <Text style={styles.value}>
-        {new Date(fecha_revision).toLocaleString()}
-      </Text>
-
-      <Text style={[styles.label, { marginTop: 20 }]}>
-        Repuestos utilizados:
-      </Text>
-      {repuestos_usados.map(r => (
-        <View key={r.precio_reparacion_id} style={styles.repItem}>
-          <Text style={styles.repName}>• {r.repuesto_nombre}</Text>
-          <Text>Cantidad utilizada: {r.cantidad}</Text>
-          <Text>Costo Mano de Obra: {r.mano_de_obra}</Text>
-          <Text>Subtotal repuesto: {r.total_repuesto}</Text>
+      <Text style={[styles.label, { marginTop:20 }]}>Repuestos utilizados:</Text>
+      {revision.repuestos_usados.map(r => (
+        <View key={r.precio_reparacion_id} style={styles.linea}>
+          <Text>• {r.repuesto_nombre}</Text>
+          <Text>   Cantidad utilizada: {r.cantidad}</Text>
+          <Text>   Costo Mano de Obra: {r.mano_de_obra}</Text>
+          <Text>   Subtotal repuesto: {r.total_repuesto}</Text>
         </View>
       ))}
 
-      <Text style={[styles.label, { marginTop: 30 }]}>
-        Tu decisión:
-      </Text>
-      <View style={styles.buttons}>
-        <Button
-          title="Continuar"
-          onPress={() => handleDecision('continuar')}
-          disabled={updating}
-        />
-        <Button
-          title="Rechazar"
-          color="#d9534f"
-          onPress={() => handleDecision('rechazar')}
-          disabled={updating}
-        />
-        <Button
-          title="Dejar en espera"
-          onPress={() => handleDecision('espera')}
-          disabled={updating}
-        />
-      </View>
-    </ScrollView>
+      {/* Solo mostramos los botones si aún no respondió (respuesta_cliente === false) */}
+      {!revision.respuesta_cliente && (
+        <View style={styles.buttons}>
+          <Button
+            title="CONTINUAR"
+            onPress={() => handleDecision('continuar')}
+          />
+          <Button
+            title="RECHAZAR"
+            color="#d9534f"
+            onPress={() => handleDecision('rechazar')}
+          />
+          <Button
+            title="DEJAR EN ESPERA"
+            onPress={() => Alert.alert('Listo', 'Se mantiene en espera')}
+          />
+        </View>
+      )}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#fff' },
-  center:    { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  title:     { fontSize: 24, fontWeight: 'bold', marginBottom: 20 },
-  label:     { fontWeight: 'bold', marginTop: 10 },
-  value:     { marginBottom: 5 },
-  repItem:   { marginLeft: 10, marginBottom: 8 },
-  repName:   { fontWeight: 'bold' },
-  buttons:   {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 10
-  },
+  container: { flex:1, padding:20, backgroundColor:'#fff' },
+  title:     { fontSize:24, fontWeight:'bold', marginBottom:10 },
+  field:     { marginTop:8 },
+  label:     { fontWeight:'bold' },
+  linea:     { marginLeft:12, marginTop:4 },
+  buttons:   { flexDirection:'row', justifyContent:'space-around', marginTop:30 }
 });

@@ -29,7 +29,10 @@ export default function NotificacionesScreen({ navigation }) {
         renderItem={({ item }) => (
           <TouchableOpacity
             style={styles.item}
-            onPress={() => navigation.navigate('Revision', { id: item.id })}
+            onPress={() =>
+              // aquí pasamos `id` para que ClienteRevisionScreen lo detecte
+              navigation.navigate('Revision', { id: item.id })
+            }
           >
             <Text style={styles.title}>Revisión #{item.id}</Text>
             <Text>{item.placa} – {item.estado}</Text>
