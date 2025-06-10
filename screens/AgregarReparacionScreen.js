@@ -20,8 +20,8 @@ export default function AgregarReparacionScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [form, setForm] = useState({ repuesto_id: '', cantidad: '', mano_de_obra: '' });
 
-  const API_REPUESTOS    = 'http://172.24.115.241:3000/api/repuestos';
-  const API_REPARACIONES = 'http://172.24.115.241:3000/api/reparaciones';
+  const API_REPUESTOS    = 'http://192.168.1.173:3000/api/repuestos';
+  const API_REPARACIONES = 'http://192.168.1.173:3000/api/reparaciones';
 
   useEffect(() => {
     fetchRepuestos();

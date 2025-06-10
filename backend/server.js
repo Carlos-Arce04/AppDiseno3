@@ -310,6 +310,7 @@ app.post('/api/revision/:id/repuestos', authenticateToken, async (req, res) => {
 });
 
 app.put('/api/revision/:id', authenticateToken, async (req, res) => {
+
   const id = parseInt(req.params.id, 10);
   const { estado, respuesta_cliente } = req.body;
   try {
@@ -329,6 +330,103 @@ app.put('/api/revision/:id', authenticateToken, async (req, res) => {
   }
 });
 
-// Arranca servidor
+
+app.post('/api/informes', authenticateToken, async (req, res) => {
+  console.log('👉 Recibida petición para crear informe');
+
+  const { placa, detalle_informe } = req.body;
+  console.log('👉 Datos recibidos:', { placa, detalle_informe });
+
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    await client.query(
+      'INSERT INTO informe (placa, detalle_informe) VALUES ($1, $2)',
+      [placa, detalle_informe]
+    );
+    console.log('✅ Informe insertado');
+
+    const updateResult = await client.query(
+      "UPDATE revision SET estado = 'entrega' WHERE placa = $1 AND estado = 'reparacion' RETURNING id",
+      [placa]
+    );
+    console.log('Revisiones actualizadas:', updateResult.rows);
+
+    await client.query('COMMIT');
+    res.sendStatus(201);
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error('❌ Error al generar informe y actualizar revisiones:', err);
+    res.status(500).json({ error: err.message });
+  } finally {
+    client.release();
+  }
+});
+
+
+
+app.get('/api/informes', authenticateToken, async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM informe ORDER BY fecha DESC');
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/informes/:id', authenticateToken, async (req, res) => {
+  const informeId = parseInt(req.params.id, 10);
+  try {
+    const result = await pool.query('SELECT * FROM informe WHERE id = $1', [informeId]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Informe no encontrado' });
+    }
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.put('/api/informes/:id/estado', authenticateToken, async (req, res) => {
+  const informeId = parseInt(req.params.id, 10);
+  const { estado_factura } = req.body;
+  if (!['pendiente', 'pagado'].includes(estado_factura)) {
+    return res.status(400).json({ error: 'Estado de factura inválido' });
+  }
+
+  try {
+    await pool.query(
+      'UPDATE informe SET estado_factura = $1 WHERE id = $2',
+      [estado_factura, informeId]
+    );
+    res.sendStatus(200);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/informes-cliente', authenticateToken, async (req, res) => {
+  try {
+    const clienteCedula = req.user.cedula;
+
+    const result = await pool.query(
+      `SELECT i.*
+       FROM informe i
+       JOIN vehiculos v ON v.placa = i.placa
+       WHERE v.propietario_cedula = $1
+       ORDER BY i.fecha DESC`,
+      [clienteCedula]
+    );
+
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`🚀 Servidor corriendo en puerto ${PORT}`));
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Servidor corriendo en todas las IPs (puerto ${PORT})`);
+});

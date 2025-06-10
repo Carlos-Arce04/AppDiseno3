@@ -15,6 +15,8 @@ import AgregarReparacionScreen from './screens/AgregarReparacionScreen';
 import AdminCrearRevisionScreen from './screens/AdminCrearRevisionScreen';
 import ClienteRevisionScreen from './screens/ClienteRevisionScreen';
 import NotificacionesScreen from './screens/NotificacionesScreen';
+import GenerarInformeScreen from './screens/GenerarInformeScreen'; // 👈 nuevo
+import ClienteInformesScreen from './screens/ClienteInformesScreen'; // 👈 nuevo
 
 const Stack = createNativeStackNavigator();
 
@@ -44,6 +46,11 @@ function AppRoutes() {
               component={AdminCrearRevisionScreen}
               options={{ title: 'Nueva Revisión' }}
             />
+            <Stack.Screen
+              name="GenerarInforme"
+              component={GenerarInformeScreen}
+              options={{ title: 'Generar Informe' }}
+            />
           </>
         ) : (
           <>
@@ -59,6 +66,11 @@ function AppRoutes() {
               component={ClienteRevisionScreen}
               options={{ title: 'Detalle Revisión' }}
             />
+            <Stack.Screen
+              name="Informes"
+              component={ClienteInformesScreen}
+              options={{ title: 'Tus Informes' }}
+            />
           </>
         )
       ) : (
@@ -70,6 +82,7 @@ function AppRoutes() {
     </Stack.Navigator>
   );
 }
+
 
 export default function App() {
   return (

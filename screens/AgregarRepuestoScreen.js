@@ -19,7 +19,7 @@ export default function AgregarRepuestoScreen({ navigation }) {
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [formData, setFormData] = useState({ id: '', nombre: '', precio: '' });
-  const API_URL = 'http://172.24.115.241:3000/api/repuestos';
+  const API_URL = 'http://192.168.1.173:3000/api/repuestos';
 
   useEffect(() => {
     fetchRepuestos();

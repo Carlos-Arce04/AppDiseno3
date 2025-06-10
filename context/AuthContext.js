@@ -44,6 +44,7 @@ export function AuthProvider({ children }) {
   const axiosAuth = useMemo(() => axios.create({
     baseURL: 'http://192.168.1.173:3000', // <<<<<<<< Asegúrate que esta IP y puerto sea la del backend Express
   }), []);
+  
 
   // Interceptor para agregar el token a cada solicitud
   useEffect(() => {

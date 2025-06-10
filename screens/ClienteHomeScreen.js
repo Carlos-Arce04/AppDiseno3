@@ -26,6 +26,14 @@ export default function ClienteHomeScreen({ navigation }) {
         <Text style={styles.buttonText}>VER MIS VEHÍCULOS</Text>
       </TouchableOpacity>
 
+      {/* 👇 Botón para ver informes */}
+      <TouchableOpacity
+        style={styles.buttonPrimary}
+        onPress={() => navigation.navigate('Informes')}
+      >
+        <Text style={styles.buttonText}>VER INFORMES</Text>
+      </TouchableOpacity>
+
       <TouchableOpacity style={styles.buttonDanger} onPress={logout}>
         <Text style={styles.buttonText}>CERRAR SESIÓN</Text>
       </TouchableOpacity>

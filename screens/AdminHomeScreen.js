@@ -39,6 +39,14 @@ export default function AdminHomeScreen({ navigation }) {
         <Text style={styles.buttonText}>CREAR REVISIÓN</Text>
       </TouchableOpacity>
 
+      {/* Nuevo botón para Generar Informe */}
+      <TouchableOpacity
+        style={styles.buttonPrimary}
+        onPress={() => navigation.navigate('GenerarInforme')}
+      >
+        <Text style={styles.buttonText}>GENERAR INFORME</Text>
+      </TouchableOpacity>
+
       <TouchableOpacity
         style={styles.buttonDanger}
         onPress={logout}
@@ -53,7 +61,27 @@ const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: '#fff', justifyContent: 'center' },
   title: { fontSize: 28, fontWeight: 'bold', textAlign: 'center', marginBottom: 10 },
   subtitle: { fontSize: 18, textAlign: 'center', marginBottom: 30 },
-  buttonPrimary: { alignSelf: 'center', backgroundColor: '#007bff', paddingVertical: 14, paddingHorizontal: 40, borderRadius: 5, marginVertical: 8 },
-  buttonDanger: { alignSelf: 'center', backgroundColor: '#d9534f', paddingVertical: 14, paddingHorizontal: 40, borderRadius: 5, marginVertical: 8 },
-  buttonText: { color: '#fff', fontSize: 16, fontWeight: 'bold', textAlign: 'center', textTransform: 'uppercase' },
+  buttonPrimary: {
+    alignSelf: 'center',
+    backgroundColor: '#007bff',
+    paddingVertical: 14,
+    paddingHorizontal: 40,
+    borderRadius: 5,
+    marginVertical: 8
+  },
+  buttonDanger: {
+    alignSelf: 'center',
+    backgroundColor: '#d9534f',
+    paddingVertical: 14,
+    paddingHorizontal: 40,
+    borderRadius: 5,
+    marginVertical: 8
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    textTransform: 'uppercase'
+  },
 });
