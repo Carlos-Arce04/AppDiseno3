@@ -11,14 +11,21 @@ import {
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
 
+
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
+
 export default function NotificacionesScreen({ navigation }) {
   const { axiosAuth } = useAuth();
   const [revisiones, setRevisiones] = useState([]);
 
   useEffect(() => {
-    axiosAuth.get('/api/revision')
+    // Usamos API_BASE_URL aquí para la llamada a /api/revision
+    axiosAuth.get(`${API_BASE_URL}/api/revision`)
       .then(r => setRevisiones(r.data))
-      .catch(() => Alert.alert('Error', 'No se pudieron cargar notificaciones'));
+      .catch((error) => { // Captura el error para ver más detalles
+        console.error("Error fetching notifications:", error.response?.data || error.message);
+        Alert.alert('Error', 'No se pudieron cargar notificaciones');
+      });
   }, []);
 
   return (

@@ -1,8 +1,12 @@
 // frontend/screens/ClienteHomeScreen.js
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native'; // Importa Image aquí
 import { useAuth } from '../context/AuthContext';
-import { Ionicons } from '@expo/vector-icons';
+// No necesitamos Ionicons si usamos una imagen local
+// import { Ionicons } from '@expo/vector-icons'; 
+
+// Asegúrate de que la imagen 'book.png' esté en tu carpeta 'assets'
+const BookIcon = require('../assets/book.png'); 
 
 export default function ClienteHomeScreen({ navigation }) {
   const { logout, user } = useAuth();
@@ -13,7 +17,11 @@ export default function ClienteHomeScreen({ navigation }) {
         style={styles.bell}
         onPress={() => navigation.navigate('Notificaciones')}
       >
-        <Ionicons name="notifications-outline" size={28} color="#007bff" />
+       
+        <Image 
+          source={BookIcon}
+          style={{ width: 28, height: 28, tintColor: '#007bff' }} // Ajusta tamaño y color
+        />
       </TouchableOpacity>
 
       <Text style={styles.title}>Inicio de Cliente</Text>

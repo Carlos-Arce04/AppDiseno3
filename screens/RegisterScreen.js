@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { View, TextInput, Button, Text, Alert, StyleSheet, Dimensions } from 'react-native';
 import axios from 'axios';
 
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
+
 const windowWidth = Dimensions.get('window').width;
 const formWidth = windowWidth * 0.9; // 90% del ancho pantalla
 
@@ -21,7 +23,8 @@ export default function HomeScreen() {
     }
 
     try {
-      const response = await axios.post('http://192.168.1.173:3000/api/register', {
+      // Usa la constante API_BASE_URL para construir el endpoint
+      const response = await axios.post(`${API_BASE_URL}/api/register`, {
         cedula,
         nombre,
         telefono,

@@ -12,36 +12,64 @@ import {
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
+
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
+
 export default function LoginScreen({ navigation }) {
   const [cedula, setCedula] = useState('');
   const [contrasena, setContrasena] = useState('');
   const { login } = useAuth();
 
-    const handleLogin = async () => {
+  // Función para formatear la cédula automáticamente con guiones
+  const formatCedula = (text) => {
+    // Elimina cualquier carácter que no sea un dígito
+    const cleanedText = text.replace(/[^0-9]/g, '');
+    let formattedText = '';
+
+    // Aplica el formato 0-0000-0000
+    if (cleanedText.length > 0) {
+      formattedText += cleanedText.substring(0, 1);
+    }
+    if (cleanedText.length > 1) {
+      formattedText += '-' + cleanedText.substring(1, 5);
+    }
+    if (cleanedText.length > 5) {
+      formattedText += '-' + cleanedText.substring(5, 9);
+    }
+    setCedula(formattedText);
+  };
+
+  const handleLogin = async () => {
+    // Ahora enviamos la 'cedula' tal cual está en el estado (con guiones),
+    // ya que el backend aparentemente espera ese formato.
+    // Hemos eliminado la línea `const cleanedCedula = cedula.replace(/-/g, '');`
+    // y el uso de `cleanedCedula`.
+
     if (!cedula || !contrasena) {
-        Alert.alert('Error', 'Por favor ingrese cédula y contraseña');
-        return;
+      Alert.alert('Error', 'Por favor ingrese cédula y contraseña');
+      return;
     }
 
     try {
-        const response = await axios.post('http://192.168.1.173:3000/api/login', {
-        cedula,
+      // Usa la constante API_BASE_URL para construir el endpoint
+      const response = await axios.post(`${API_BASE_URL}/api/login`, {
+        cedula, // Enviamos 'cedula' directamente, que ahora incluye guiones
         contrasena,
-        });
+      });
 
-        const usuario = response.data.usuario;
-        const token = response.data.token;
+      const usuario = response.data.usuario;
+      const token = response.data.token;
 
-        // Guardar sesión en contexto y AsyncStorage
-        await login(usuario, token);
+      // Guardar sesión en contexto y AsyncStorage
+      await login(usuario, token);
 
-        Alert.alert('Bienvenido', `Hola, ${usuario.nombre}`);
+      Alert.alert('Bienvenido', `Hola, ${usuario.nombre}`);
 
-        // NO hacer navigation.replace aquí, el cambio de contexto ya hará navegar
+      // NO hacer navigation.replace aquí, el cambio de contexto ya hará navegar
     } catch (error) {
-        Alert.alert('Error', error.response?.data?.error || 'Error en el inicio de sesión');
+      Alert.alert('Error', error.response?.data?.error || 'Error en el inicio de sesión');
     }
-    };
+  };
 
   return (
     <View style={styles.container}>
@@ -52,9 +80,10 @@ export default function LoginScreen({ navigation }) {
           style={styles.input}
           placeholder="Cédula (0-0000-0000)"
           value={cedula}
-          onChangeText={setCedula}
+          onChangeText={formatCedula} // Usa la nueva función de formateo
           keyboardType="numeric"
           autoCapitalize="none"
+          maxLength={11} // Limita la longitud para el formato (ej: 1-2345-6789 tiene 11 caracteres)
         />
         <TextInput
           style={styles.input}
@@ -75,12 +104,12 @@ export default function LoginScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    justifyContent: 'center', 
-    alignItems: 'center', 
-    padding: 20, 
-    backgroundColor: '#fff' 
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#fff'
   },
   logo: {
     width: 150,

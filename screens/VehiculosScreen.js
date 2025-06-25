@@ -12,6 +12,9 @@ import {
 import { Picker } from '@react-native-picker/picker'; // Asegúrate de instalar: npm install @react-native-picker/picker
 import { useAuth } from '../context/AuthContext';
 
+
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
+
 export default function VehiculosScreen() {
   const { user, axiosAuth } = useAuth();
 
@@ -27,13 +30,15 @@ export default function VehiculosScreen() {
   const [propietarioSeleccionado, setPropietarioSeleccionado] = useState(""); // cadena vacía para evitar warning
   const [editing, setEditing] = useState(false);
 
-  const API_URL = 'http://192.168.1.173:3000/api/vehiculos';
+
+
 
   useEffect(() => {
     fetchVehiculos();
 
     if (user?.rol === 'administrador') {
-      axiosAuth.get('/api/usuarios')
+      // Uso de API_BASE_URL para la llamada de usuarios
+      axiosAuth.get(`${API_BASE_URL}/api/usuarios`)
         .then(res => {
           console.log('Usuarios cargados:', res.data);
           if (Array.isArray(res.data)) {
@@ -43,7 +48,7 @@ export default function VehiculosScreen() {
           }
         })
         .catch(err => {
-          console.error('Error cargando usuarios:', err);
+          console.error('Error cargando usuarios:', err.response || err.message);
           setUsuarios([]);
         });
     }
@@ -52,7 +57,8 @@ export default function VehiculosScreen() {
   const fetchVehiculos = async () => {
     setLoading(true);
     try {
-      const response = await axiosAuth.get(API_URL);
+      // Uso de API_BASE_URL para la llamada de vehículos
+      const response = await axiosAuth.get(`${API_BASE_URL}/api/vehiculos`);
       setVehiculos(response.data);
     } catch (error) {
       console.error('Fetch error:', error.response || error.message);
@@ -82,19 +88,24 @@ export default function VehiculosScreen() {
 
   const handleDelete = (placa) => {
     console.log('handleDelete llamado con placa:', placa);
-    const confirmado = window.confirm('¿Está seguro que desea eliminar este vehículo?');
-    if (confirmado) {
-      console.log('Confirmado eliminar (web):', placa);
-      deleteVehiculo(placa);
-    }
+    // En React Native no existe window.confirm directamente para web.
+    // Para web, funciona; para nativo, usar Alert.alert con botones.
+    Alert.alert(
+      'Confirmar eliminación',
+      '¿Está seguro que desea eliminar este vehículo?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Eliminar', onPress: () => deleteVehiculo(placa), style: 'destructive' },
+      ],
+      { cancelable: false }
+    );
   };
-
-
 
   const deleteVehiculo = async (placa) => {
     try {
       console.log('Placa a eliminar:', placa); // VERIFICA LA PLACA REAL
-      await axiosAuth.delete(`${API_URL}/${placa}`);
+      // Uso de API_BASE_URL para la llamada de eliminar vehículo
+      await axiosAuth.delete(`${API_BASE_URL}/api/vehiculos/${placa}`);
       Alert.alert('Éxito', 'Vehículo eliminado');
       fetchVehiculos();
     } catch (error) {
@@ -127,11 +138,13 @@ export default function VehiculosScreen() {
       }
 
       if (editing) {
-        await axiosAuth.put(`${API_URL}/${placa}`, dataToSend);
+        // Uso de API_BASE_URL para la llamada de actualizar vehículo
+        await axiosAuth.put(`${API_BASE_URL}/api/vehiculos/${placa}`, dataToSend);
         Alert.alert('Éxito', 'Vehículo actualizado');
       } else {
         dataToSend.placa = placa;
-        await axiosAuth.post(API_URL, dataToSend);
+        // Uso de API_BASE_URL para la llamada de crear vehículo
+        await axiosAuth.post(`${API_BASE_URL}/api/vehiculos`, dataToSend);
         Alert.alert('Éxito', 'Vehículo registrado');
       }
 

@@ -11,13 +11,16 @@ import {
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
 
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
+
 export default function GenerarInformeScreen() {
   const { axiosAuth, user } = useAuth();
   const [informes, setInformes] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [form, setForm] = useState({ placa: '', detalle_informe: '' });
 
-  const API_INFORMES = 'http://192.168.1.173:3000/api/informes';
+  // Ahora construimos la URL usando API_BASE_URL
+  const API_INFORMES = `${API_BASE_URL}/api/informes`;
 
   useEffect(() => {
     fetchInformes();

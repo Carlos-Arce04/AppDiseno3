@@ -1,5 +1,3 @@
-// frontend/screens/ClienteRevisionScreen.js
-
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -10,6 +8,10 @@ import {
   ActivityIndicator
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
+
+
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
+
 
 export default function ClienteRevisionScreen({ route, navigation }) {
   // Aceptamos tanto route.params.revisionId como route.params.id
@@ -27,9 +29,11 @@ export default function ClienteRevisionScreen({ route, navigation }) {
     }
     try {
       setLoading(true);
-      const res = await axiosAuth.get(`/api/revision/${revisionId}`);
+      // Usamos API_BASE_URL aquí para formar la URL completa
+      const res = await axiosAuth.get(`${API_BASE_URL}/api/revision/${revisionId}`);
       setRevision(res.data);
-    } catch {
+    } catch (error) { // Captura el error para ver más detalles
+      console.error("Error fetching revision:", error.response?.data || error.message);
       Alert.alert('Error', 'No se pudo cargar la revisión.');
     } finally {
       setLoading(false);
@@ -38,32 +42,35 @@ export default function ClienteRevisionScreen({ route, navigation }) {
 
   useEffect(() => {
     fetchRevision();
-  }, []);
+  }, [revisionId]); // Añadir revisionId como dependencia para refetch si cambia
+
 
   const handleDecision = async (decision) => {
-    // Solo "continuar" y "rechazar" disparan el patch
+    // Solo "continuar" y "rechazar" disparan el put
     let nuevoEstado;
-    if (decision === 'continuar')      nuevoEstado = 'reparacion';
-    else if (decision === 'rechazar')  nuevoEstado = 'cancelado';
+    if (decision === 'continuar')        nuevoEstado = 'reparacion';
+    else if (decision === 'rechazar')    nuevoEstado = 'cancelado';
     else return;  // en_espera no modifica nada
 
     try {
-      await axiosAuth.patch(`/api/revision/${revisionId}`, {
+      // Usamos API_BASE_URL aquí para formar la URL completa
+      await axiosAuth.put(`${API_BASE_URL}/api/revision/${revisionId}`, {
         estado: nuevoEstado,
         respuesta_cliente: true
       });
       Alert.alert('Gracias', 'Tu decisión ha sido registrada');
       fetchRevision();  // refresca y ahora respuesta_cliente === true
-    } catch {
+    } catch (error) { // Captura el error para ver más detalles
+      console.error("Error handling decision:", error.response?.data || error.message);
       Alert.alert('Error', 'No se pudo registrar tu decisión.');
     }
   };
 
   if (loading) {
-    return <ActivityIndicator style={{ flex:1, justifyContent:'center' }} />;
+    return <ActivityIndicator style={{ flex:1, justifyContent:'center' }} size="large" color="#0000ff" />;
   }
   if (!revision) {
-    return <Text style={{ padding:20 }}>Revisión no encontrada</Text>;
+    return <Text style={{ padding:20, textAlign: 'center' }}>Revisión no encontrada</Text>;
   }
 
   return (
@@ -92,14 +99,18 @@ export default function ClienteRevisionScreen({ route, navigation }) {
       </View>
 
       <Text style={[styles.label, { marginTop:20 }]}>Repuestos utilizados:</Text>
-      {revision.repuestos_usados.map(r => (
-        <View key={r.precio_reparacion_id} style={styles.linea}>
-          <Text>• {r.repuesto_nombre}</Text>
-          <Text>   Cantidad utilizada: {r.cantidad}</Text>
-          <Text>   Costo Mano de Obra: {r.mano_de_obra}</Text>
-          <Text>   Subtotal repuesto: {r.total_repuesto}</Text>
-        </View>
-      ))}
+      {revision.repuestos_usados && revision.repuestos_usados.length > 0 ? (
+        revision.repuestos_usados.map(r => (
+          <View key={r.precio_reparacion_id || Math.random()} style={styles.linea}>
+            <Text>• {r.repuesto_nombre}</Text>
+            <Text>   Cantidad utilizada: {r.cantidad}</Text>
+            <Text>   Costo Mano de Obra: {r.mano_de_obra}</Text>
+            <Text>   Subtotal repuesto: {r.total_repuesto}</Text>
+          </View>
+        ))
+      ) : (
+        <Text style={styles.linea}>No hay repuestos registrados.</Text>
+      )}
 
       {/* Solo mostramos los botones si aún no respondió (respuesta_cliente === false) */}
       {!revision.respuesta_cliente && (

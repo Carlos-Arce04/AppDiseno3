@@ -12,6 +12,9 @@ import {
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
 
+// Accede a la variable de entorno definida en tu .env con el prefijo EXPO_PUBLIC_
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
+
 export default function AgregarRepuestoScreen({ navigation }) {
   const { axiosAuth } = useAuth();
 
@@ -19,7 +22,8 @@ export default function AgregarRepuestoScreen({ navigation }) {
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [formData, setFormData] = useState({ id: '', nombre: '', precio: '' });
-  const API_URL = 'http://192.168.1.173:3000/api/repuestos';
+  // Ahora construimos la URL usando API_BASE_URL
+  const API_URL = `${API_BASE_URL}/api/repuestos`;
 
   useEffect(() => {
     fetchRepuestos();

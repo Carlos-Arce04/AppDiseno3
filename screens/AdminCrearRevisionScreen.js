@@ -1,5 +1,3 @@
-// frontend/screens/AdminCrearRevisionScreen.js
-
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -13,6 +11,9 @@ import {
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { useAuth } from '../context/AuthContext';
+
+// Accede a la variable de entorno definida en tu .env con el prefijo EXPO_PUBLIC_
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
 export default function AdminCrearRevisionScreen() {
   const { axiosAuth } = useAuth();
@@ -30,17 +31,17 @@ export default function AdminCrearRevisionScreen() {
 
   useEffect(() => {
     fetchRevisiones();
-    axiosAuth.get('/api/vehiculos')
+    axiosAuth.get(`${API_BASE_URL}/api/vehiculos`)
       .then(res => setVehiculos(res.data))
       .catch(() => Alert.alert('Error', 'No se cargaron vehículos'));
-    axiosAuth.get('/api/reparaciones')
+    axiosAuth.get(`${API_BASE_URL}/api/reparaciones`)
       .then(res => setRepuestos(res.data))
       .catch(() => Alert.alert('Error', 'No se cargaron reparaciones'));
   }, []);
 
   const fetchRevisiones = async () => {
     try {
-      const res = await axiosAuth.get('/api/revision');
+      const res = await axiosAuth.get(`${API_BASE_URL}/api/revision`);
       setRevisiones(res.data);
     } catch (err) {
       console.error(err);
@@ -67,12 +68,12 @@ export default function AdminCrearRevisionScreen() {
       return Alert.alert('Error', 'Agregue al menos un repuesto');
     }
     try {
-      const res = await axiosAuth.post('/api/revision', { placa, mecanico, detalle_averia });
+      const res = await axiosAuth.post(`${API_BASE_URL}/api/revision`, { placa, mecanico, detalle_averia });
       const revId = res.data.id;
 
       await Promise.all(
         lineas.map(l =>
-          axiosAuth.post(`/api/revision/${revId}/repuestos`, {
+          axiosAuth.post(`${API_BASE_URL}/api/revision/${revId}/repuestos`, {
             precio_reparacion_id: l.id,
           })
         )
@@ -116,9 +117,9 @@ export default function AdminCrearRevisionScreen() {
             {usados.map(r => (
               <View key={r.precio_reparacion_id} style={styles.linea}>
                 <Text>• {r.repuesto_nombre}</Text>
-                <Text>   Cantidad utilizada: {r.cantidad}</Text>
-                <Text>   Costo Mano de Obra: {r.mano_de_obra}</Text>
-                <Text>   Subtotal repuesto: {r.total_repuesto}</Text>
+                <Text>  Cantidad utilizada: {r.cantidad}</Text>
+                <Text>  Costo Mano de Obra: {r.mano_de_obra}</Text>
+                <Text>  Subtotal repuesto: {r.total_repuesto}</Text>
               </View>
             ))}
           </>

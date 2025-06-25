@@ -8,7 +8,7 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "backend": "node backend/server.js",
-    "dev": "concurrently -k \"npm run backend\" \"npm run start\""
+    "dev": "concurrently -k --names \"BACKEND,EXPO\" -c \"bgBlue.bold,bgGreen.bold\" \"npm run backend\" \"npm run start\""
   },
   "dependencies": {
     "@expo/metro-runtime": "~5.0.4",
@@ -19,17 +19,21 @@
     "axios": "^1.9.0",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
-    "expo": "~53.0.9",
+    "dotenv": "^16.5.0",
+    "expo": "53.0.11",
+    "expo-signature": "^0.2.1",
     "expo-status-bar": "~2.2.3",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.16.0",
     "react": "19.0.0",
     "react-dom": "19.0.0",
-    "react-native": "0.79.2",
+    "react-native": "0.79.3",
     "react-native-safe-area-context": "^5.4.0",
-    "react-native-screens": "^4.10.0",
-    "react-native-web": "^0.20.0"
+    "react-native-screens": "~4.11.1",
+    "react-native-signature-canvas": "^4.7.4",
+    "react-native-web": "^0.20.0",
+    "react-native-webview": "13.13.5"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

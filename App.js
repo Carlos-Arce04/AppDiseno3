@@ -2,6 +2,7 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { Image, TouchableOpacity } from 'react-native'; // Importa Image y TouchableOpacity
 
 import { AuthProvider, useAuth } from './context/AuthContext';
 
@@ -15,8 +16,11 @@ import AgregarReparacionScreen from './screens/AgregarReparacionScreen';
 import AdminCrearRevisionScreen from './screens/AdminCrearRevisionScreen';
 import ClienteRevisionScreen from './screens/ClienteRevisionScreen';
 import NotificacionesScreen from './screens/NotificacionesScreen';
-import GenerarInformeScreen from './screens/GenerarInformeScreen'; // 👈 nuevo
-import ClienteInformesScreen from './screens/ClienteInformesScreen'; // 👈 nuevo
+import GenerarInformeScreen from './screens/GenerarInformeScreen';
+import ClienteInformesScreen from './screens/ClienteInformesScreen';
+
+// Asegúrate de que la imagen 'flecha.png' esté en tu carpeta 'assets'
+const ArrowBackIcon = require('./assets/flecha.png'); 
 
 const Stack = createNativeStackNavigator();
 
@@ -25,11 +29,33 @@ function AppRoutes() {
   if (loading) return null;
 
   return (
-    <Stack.Navigator screenOptions={{ headerShown: true }}>
+    <Stack.Navigator 
+      screenOptions={({ navigation }) => ({ // Importante: navigation en screenOptions
+        headerShown: true,
+        headerStyle: { 
+          backgroundColor: '#333' 
+        },
+        headerTintColor: '#fff', // Esto afecta el color del texto del título
+        headerBackTitleVisible: false, // Oculta el texto "Back" (si aparece)
+        // Aquí definimos el componente del botón de retroceso
+        headerLeft: () => (
+          <TouchableOpacity 
+            onPress={() => navigation.goBack()} // Usa navigation.goBack()
+            style={{ marginLeft: 10 }} // Ajusta el margen si es necesario
+          >
+            <Image 
+              source={ArrowBackIcon} // Usa la imagen importada
+              style={{ width: 25, height: 25, tintColor: '#fff' }} // Aplica tintColor aquí
+            />
+          </TouchableOpacity>
+        ),
+      })}
+    >
       {user ? (
         user.rol === 'administrador' ? (
           <>
-            <Stack.Screen name="AdminHome" component={AdminHomeScreen} />
+            {/* Opcional: Para pantallas que NO deben tener flecha de regreso */}
+            <Stack.Screen name="AdminHome" component={AdminHomeScreen} options={{ headerLeft: () => null }}/>
             <Stack.Screen name="Vehiculos" component={VehiculosScreen} />
             <Stack.Screen
               name="AgregarRepuesto"
@@ -54,7 +80,8 @@ function AppRoutes() {
           </>
         ) : (
           <>
-            <Stack.Screen name="ClienteHome" component={ClienteHomeScreen} />
+            {/* Opcional: Para pantallas que NO deben tener flecha de regreso */}
+            <Stack.Screen name="ClienteHome" component={ClienteHomeScreen} options={{ headerLeft: () => null }}/>
             <Stack.Screen name="Vehiculos" component={VehiculosScreen} />
             <Stack.Screen
               name="Notificaciones"
@@ -75,8 +102,9 @@ function AppRoutes() {
         )
       ) : (
         <>
-          <Stack.Screen name="Login" component={LoginScreen} />
-          <Stack.Screen name="Register" component={RegisterScreen} />
+          {/* Login y Register usualmente no tienen flecha de regreso */}
+          <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
+          <Stack.Screen name="Register" component={RegisterScreen} options={{ title: 'Registro', headerLeft: () => null }}/> 
         </>
       )}
     </Stack.Navigator>

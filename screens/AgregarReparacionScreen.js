@@ -13,6 +13,9 @@ import {
 import { Picker } from '@react-native-picker/picker';
 import { useAuth } from '../context/AuthContext';
 
+// Accede a la variable de entorno definida en tu .env con el prefijo EXPO_PUBLIC_
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
+
 export default function AgregarReparacionScreen() {
   const { axiosAuth } = useAuth();
   const [repuestos, setRepuestos] = useState([]);
@@ -20,8 +23,9 @@ export default function AgregarReparacionScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [form, setForm] = useState({ repuesto_id: '', cantidad: '', mano_de_obra: '' });
 
-  const API_REPUESTOS    = 'http://192.168.1.173:3000/api/repuestos';
-  const API_REPARACIONES = 'http://192.168.1.173:3000/api/reparaciones';
+  // Ahora construimos las URLs usando API_BASE_URL
+  const API_REPUESTOS = `${API_BASE_URL}/api/repuestos`;
+  const API_REPARACIONES = `${API_BASE_URL}/api/reparaciones`;
 
   useEffect(() => {
     fetchRepuestos();
