@@ -1,4 +1,3 @@
-// frontend/screens/AdminCrearRevisionScreen.js
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   View,
@@ -20,25 +19,54 @@ import { useAuth } from '../context/AuthContext';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
+// Función para obtener el color del estado, reutilizada de NotificacionesScreen
+const getStatusColor = (estado) => {
+  switch (estado) {
+    case 'entrega':
+      return '#28a745'; // Verde
+    case 'reparacion':
+      return '#fd7e14'; // Naranja
+    case 'en_espera': // Se ajusta para el valor real recibido del backend (con guion bajo)
+      return '#007bff'; // Azul
+    case 'cancelado':
+      return '#dc3545'; // Rojo
+    default:
+      return '#6c757d'; // Gris por defecto
+  }
+};
+
 // --- COMPONENTE PARA CADA REVISIÓN EN LA LISTA ---
 const RevisionItem = ({ item }) => {
   const fecha = new Date(item.fecha_revision);
   const fechaFormateada = fecha.toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' });
   const repuestosUsados = Array.isArray(item.repuestos_usados) ? item.repuestos_usados : [];
+  const statusColor = getStatusColor(item.estado); // Obtener el color del estado
+
+  // Función para formatear el estado para la visualización en el frontend
+  const formattedEstado = (estado) => {
+    if (estado === 'en_espera') {
+      return 'En espera';
+    }
+    // Puedes añadir más casos de formateo aquí si es necesario
+    return estado;
+  };
 
   return (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
         <Text style={styles.cardTitle}>Revisión #{item.id} - <Text style={styles.placaText}>{item.placa}</Text></Text>
-        <Text style={styles.cardDate}>{fechaFormateada}</Text>
+        <View style={[styles.statusBadge, { backgroundColor: statusColor }]}>
+          <Text style={styles.statusBadgeText}>{formattedEstado(item.estado)}</Text>
+        </View>
       </View>
       <View style={styles.cardBody}>
         <Text style={styles.fieldLabel}>Mecánico:</Text>
         <Text style={styles.fieldValue}>{item.mecanico}</Text>
         <Text style={styles.fieldLabel}>Detalle de Avería:</Text>
         <Text style={styles.fieldValue}>{item.detalle_averia}</Text>
-        <Text style={styles.fieldLabel}>Estado:</Text>
-        <Text style={styles.fieldValue}>{item.estado}</Text>
+        {/* El estado ahora se muestra en el header con el badge */}
+        {/* <Text style={styles.fieldLabel}>Estado:</Text>
+        <Text style={styles.fieldValue}>{item.estado}</Text> */}
       </View>
       {repuestosUsados.length > 0 && (
         <View style={styles.cardFooter}>
@@ -168,8 +196,8 @@ export default function AdminCrearRevisionScreen() {
 
       await Promise.all(
         repuestosSeleccionados.map(l =>
-          axiosAuth.post(`${API_BASE_URL}/api/revision/${revId}/repuestos`, {
-            precio_reparacion_id: l.id,
+          axiosAuth.post(`${API_BASE_URL}/api/revision/${revId}/repuestos`, { 
+            precio_reparacion_id: l.id, 
           })
         )
       );
@@ -345,6 +373,19 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: 18, fontWeight: 'bold', color: '#333' },
   placaText: { fontWeight: '600', color: '#007bff' },
   cardDate: { fontSize: 13, color: '#999' },
+  // --- Nuevos estilos para el badge de estado ---
+  statusBadge: {
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 12,
+  },
+  statusBadgeText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+  },
+  // --- Fin nuevos estilos ---
   cardBody: { paddingVertical: 10 },
   fieldLabel: { fontSize: 14, fontWeight: 'bold', color: '#888', marginTop: 8 },
   fieldValue: { fontSize: 16, color: '#444', marginBottom: 4 },
@@ -354,13 +395,13 @@ const styles = StyleSheet.create({
   emptyContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: '40%' },
   emptyText: { fontSize: 16, color: '#888', textAlign: 'center' },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.6)', justifyContent: 'center', alignItems: 'center' },
-  modalContent: { 
+  modalContent: {  
     width: '95%',
     maxWidth: 700,
-    maxHeight: '90%', 
-    backgroundColor: '#fff', 
-    borderRadius: 20, 
-    padding: 25 
+    maxHeight: '90%',  
+    backgroundColor: '#fff',  
+    borderRadius: 20,  
+    padding: 25  
   },
   modalTitle: { fontSize: 22, fontWeight: 'bold', marginBottom: 20, textAlign: 'center', color: '#333' },
   statusContainer: { width: '100%', padding: 15, borderRadius: 12, marginBottom: 20, alignItems: 'center' },
@@ -372,7 +413,7 @@ const styles = StyleSheet.create({
   textArea: { height: 100, textAlignVertical: 'top' },
   pickerContainer: { backgroundColor: '#f7f7f7', borderRadius: 12, borderWidth: 1, borderColor: '#e0e0e0', marginBottom: 16, justifyContent: 'center' },
   picker: { height: 55, width: '100%', color: '#333' },
-  pickerItem: {
+  pickerItem: { 
     fontSize: 16, // Para que el texto interno tenga el mismo tamaño
   },
   addedItemsContainer: { marginVertical: 15, padding: 10, backgroundColor: '#f9f9f9', borderRadius: 8 },

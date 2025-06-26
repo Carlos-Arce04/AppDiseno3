@@ -1,5 +1,3 @@
-// frontend/screens/NotificacionesScreen.js
-
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   View,
@@ -7,7 +5,6 @@ import {
   FlatList,
   TouchableOpacity,
   StyleSheet,
-  // Alert, // Eliminamos la importación de Alert
   SafeAreaView,
   ActivityIndicator,
   RefreshControl
@@ -16,37 +13,45 @@ import { useAuth } from '../context/AuthContext';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
-// --- COMPONENTE PARA CADA NOTIFICACIÓN (SIN ICONOS) ---
+// Función para obtener el color del estado, reutilizada de AdminCrearRevisionScreen
+const getStatusColor = (estado) => {
+  switch (estado) {
+    case 'entrega':
+      return '#28a745'; // Verde
+    case 'reparacion':
+      return '#fd7e14'; // Naranja
+    case 'en_espera': // Azul para 'en_espera'
+      return '#007bff'; 
+    case 'cancelado':
+      return '#dc3545'; // Rojo
+    default:
+      return '#6c757d'; // Gris
+  }
+};
+
+// --- COMPONENTE PARA CADA NOTIFICACIÓN EN LA LISTA ---
 const RevisionItem = ({ item, onPress }) => {
   const fecha = new Date(item.fecha_revision);
   const fechaFormateada = fecha.toLocaleDateString('es-ES', {
     year: 'numeric', month: 'long', day: 'numeric'
   });
 
-  // Asigna un color según el estado
-  const getStatusColor = (estado) => {
-    switch (estado) {
-      case 'entrega':
-        return '#28a745'; // Verde
-      case 'reparacion':
-        return '#fd7e14'; // Naranja
-      case 'diagnostico':
-        return '#007bff'; // Azul
-      case 'cancelado':
-        return '#dc3545'; // Rojo
-      default:
-        return '#6c757d'; // Gris
-    }
-  };
-
   const statusColor = getStatusColor(item.estado);
+
+  // Función para formatear el estado para la visualización en el frontend
+  const formattedEstado = (estado) => {
+    if (estado === 'en_espera') {
+      return 'En espera';
+    }
+    return estado;
+  };
 
   return (
     <TouchableOpacity style={styles.card} onPress={onPress}>
       <View style={styles.cardHeader}>
         <Text style={styles.cardTitle}>Revisión #{item.id}</Text>
         <View style={[styles.statusBadge, { backgroundColor: statusColor }]}>
-          <Text style={styles.statusBadgeText}>{item.estado}</Text>
+          <Text style={styles.statusBadgeText}>{formattedEstado(item.estado)}</Text>
         </View>
       </View>
       <View style={styles.cardBody}>
@@ -64,8 +69,8 @@ const RevisionItem = ({ item, onPress }) => {
   );
 };
 
-// --- COMPONENTE PARA LOS BOTONES DE FILTRO ---
-const FiltroTabs = ({ opciones, filtroActivo, setFiltroActivo }) => (
+// --- COMPONENTE PARA LOS BOTONES DE FILTRO DE ESTADO ---
+const FiltroEstadoTabs = ({ opciones, filtroActivo, setFiltroActivo }) => (
   <View style={styles.filtroContainer}>
     {opciones.map((opcion) => (
       <TouchableOpacity
@@ -89,12 +94,40 @@ const FiltroTabs = ({ opciones, filtroActivo, setFiltroActivo }) => (
   </View>
 );
 
+// --- COMPONENTE PARA LOS BOTONES DE FILTRO DE FECHA ---
+const FiltroFechaTabs = ({ filtroActivo, setFiltroActivo }) => {
+  const opciones = [
+    { key: 'siempre', label: 'Todas las fechas' },
+    { key: 'semana', label: 'Última semana' },
+    { key: '2semanas', label: 'Últimas 2 semanas' },
+    { key: '3semanas', label: 'Últimas 3 semanas' },
+    { key: 'mes', label: 'Último mes' },
+  ];
+
+  return (
+    <View style={styles.filtroContainer}>
+      {opciones.map((opcion) => (
+        <TouchableOpacity 
+          key={opcion.key}
+          style={[styles.filtroBoton, filtroActivo === opcion.key && styles.filtroBotonActivo]}
+          onPress={() => setFiltroActivo(opcion.key)}
+        >
+          <Text style={[styles.filtroTexto, filtroActivo === opcion.key && styles.filtroTextoActivo]}>
+            {opcion.label}
+          </Text>
+        </TouchableOpacity>
+      ))}
+    </View>
+  );
+};
+
 
 export default function NotificacionesScreen({ navigation }) {
   const { axiosAuth } = useAuth();
   const [todasLasRevisiones, setTodasLasRevisiones] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [filtroActivo, setFiltroActivo] = useState('Todas');
+  const [filtroEstado, setFiltroEstado] = useState('Todas'); // Renombrado de filtroActivo
+  const [filtroFecha, setFiltroFecha] = useState('siempre'); // Nuevo estado para filtro de fecha
   const [filtrosVisibles, setFiltrosVisibles] = useState(false); // Estado para controlar visibilidad
 
   // --- NUEVO ESTADO PARA MENSAJES DE ESTADO ---
@@ -123,17 +156,35 @@ export default function NotificacionesScreen({ navigation }) {
   }, [navigation, fetchRevisiones]);
 
   const revisionesFiltradas = useMemo(() => {
-    if (filtroActivo === 'Todas') {
-      return todasLasRevisiones;
-    }
+    let filteredByStatus = todasLasRevisiones;
     const estadoMapeado = {
-        'Pendientes': 'diagnostico',
+        'Pendientes': 'en_espera', // Mapear 'Pendientes' a 'en_espera'
         'En Reparación': 'reparacion',
         'Entrega': 'entrega',
         'Cancelado': 'cancelado',
     };
-    return todasLasRevisiones.filter(rev => rev.estado === estadoMapeado[filtroActivo]);
-  }, [todasLasRevisiones, filtroActivo]);
+
+    if (filtroEstado !== 'Todas') {
+      filteredByStatus = todasLasRevisiones.filter(rev => rev.estado === estadoMapeado[filtroEstado]);
+    }
+
+    // Aplicar filtro de fecha sobre los resultados ya filtrados por estado
+    if (filtroFecha === 'siempre') return filteredByStatus;
+
+    const ahora = new Date();
+    const fechaLimite = new Date();
+
+    switch (filtroFecha) {
+      case 'semana': fechaLimite.setDate(ahora.getDate() - 7); break;
+      case '2semanas': fechaLimite.setDate(ahora.getDate() - 14); break;
+      case '3semanas': fechaLimite.setDate(ahora.getDate() - 21); break;
+      case 'mes': fechaLimite.setMonth(ahora.getMonth() - 1); break;
+      default: return filteredByStatus;
+    }
+    
+    return filteredByStatus.filter(r => new Date(r.fecha_revision) >= fechaLimite);
+
+  }, [todasLasRevisiones, filtroEstado, filtroFecha]); // Dependencias actualizadas
 
   const handlePressRevision = (id) => {
     navigation.navigate('Revision', { id: id });
@@ -148,7 +199,7 @@ export default function NotificacionesScreen({ navigation }) {
     );
   }
 
-  const opcionesFiltro = ['Todas', 'Pendientes', 'En Reparación', 'Entrega', 'Cancelado'];
+  const opcionesFiltroEstado = ['Todas', 'Pendientes', 'En Reparación', 'Entrega', 'Cancelado'];
 
   return (
     <SafeAreaView style={styles.container}>
@@ -176,11 +227,17 @@ export default function NotificacionesScreen({ navigation }) {
       
       {/* --- RENDERIZADO CONDICIONAL DE LOS FILTROS --- */}
       {filtrosVisibles && (
-        <FiltroTabs 
-          opciones={opcionesFiltro}
-          filtroActivo={filtroActivo}
-          setFiltroActivo={setFiltroActivo}
-        />
+        <View>
+          <FiltroEstadoTabs 
+            opciones={opcionesFiltroEstado}
+            filtroActivo={filtroEstado}
+            setFiltroActivo={setFiltroEstado}
+          />
+          <FiltroFechaTabs 
+            filtroActivo={filtroFecha}
+            setFiltroActivo={setFiltroFecha}
+          />
+        </View>
       )}
       
       <FlatList
@@ -194,7 +251,8 @@ export default function NotificacionesScreen({ navigation }) {
           <View style={styles.centered}>
             <Text style={styles.emptyText}>No hay notificaciones</Text>
             <Text style={styles.emptySubText}>
-              {filtroActivo !== 'Todas' ? `No hay revisiones en estado "${filtroActivo}"` : '¡Todo está al día!'}
+              {filtroEstado !== 'Todas' ? `No hay revisiones en estado "${filtroEstado}"` : ''}
+              {filtroFecha !== 'siempre' ? ` para el período "${filtroFecha}"` : ''}. ¡Todo está al día!
             </Text>
           </View>
         }

@@ -10,23 +10,24 @@ import {
   StyleSheet,
   SafeAreaView,
   ActivityIndicator,
-  RefreshControl
+  RefreshControl,
+  Image // Asegúrate de importar Image para el icono
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
-import { Ionicons } from '@expo/vector-icons';
+// import { Ionicons } from '@expo/vector-icons'; // ¡Esta línea ha sido eliminada!
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
 // --- COMPONENTE PARA CADA REPUESTO ---
 const RepuestoItem = ({ item }) => (
     <View style={styles.card}>
-        <View style={styles.cardHeader}>
-            <Text style={styles.cardTitle}>{item.nombre}</Text>
-            <Text style={styles.cardId}>ID: {item.id}</Text>
-        </View>
-        <View style={styles.cardBody}>
-            <Text style={styles.cardPrice}>₡{parseFloat(item.precio).toFixed(2)}</Text>
-        </View>
+      <View style={styles.cardHeader}>
+          <Text style={styles.cardTitle}>{item.nombre}</Text>
+          <Text style={styles.cardId}>ID: {item.id}</Text>
+      </View>
+      <View style={styles.cardBody}>
+          <Text style={styles.cardPrice}>₡{parseFloat(item.precio).toFixed(2)}</Text>
+      </View>
     </View>
 );
 
@@ -98,7 +99,8 @@ export default function AgregarRepuestoScreen() {
             <View style={styles.header}>
                 <Text style={styles.title}>Repuestos</Text>
                 <TouchableOpacity style={styles.addButton} onPress={openModalForNew}>
-                    <Ionicons name="add" size={24} color="#fff" />
+                    {/* Icono de añadir (add) reemplazado por imagen PNG */}
+                    <Image source={require('../assets/add-icon.png')} style={styles.addButtonIcon} />
                     <Text style={styles.addButtonText}>Nuevo</Text>
                 </TouchableOpacity>
             </View>
@@ -182,6 +184,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     borderRadius: 8,
     alignItems: 'center',
+  },
+  // ESTILO PARA EL ICONO DE AÑADIR (COPIADO DE ADMINCREARREVISIONSCREEN)
+  addButtonIcon: {
+    width: 24,
+    height: 24,
+    tintColor: '#fff',
+    resizeMode: 'contain',
   },
   addButtonText: {
       color: '#fff',
