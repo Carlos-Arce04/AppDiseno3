@@ -1,95 +1,154 @@
 // frontend/screens/ClienteHomeScreen.js
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native'; // Importa Image aquí
+import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Image } from 'react-native';
 import { useAuth } from '../context/AuthContext';
-// No necesitamos Ionicons si usamos una imagen local
-// import { Ionicons } from '@expo/vector-icons'; 
+// Eliminamos la importación de Ionicons ya que los reemplazaremos por imágenes PNG.
 
-// Asegúrate de que la imagen 'book.png' esté en tu carpeta 'assets'
+// Ruta del icono de libro (este ya está bien y se mantiene)
 const BookIcon = require('../assets/book.png'); 
 
 export default function ClienteHomeScreen({ navigation }) {
   const { logout, user } = useAuth();
 
   return (
-    <View style={styles.container}>
-      <TouchableOpacity
-        style={styles.bell}
-        onPress={() => navigation.navigate('Notificaciones')}
-      >
-       
-        <Image 
-          source={BookIcon}
-          style={{ width: 28, height: 28, tintColor: '#007bff' }} // Ajusta tamaño y color
-        />
-      </TouchableOpacity>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.title}>Taller JYC Motors</Text>
+        <TouchableOpacity
+          style={styles.notificationButton}
+          onPress={() => navigation.navigate('Notificaciones')}
+        >
+          {/* Icono de libro que ya estaba implementado con Image y se mantiene */}
+          <Image 
+            source={BookIcon}
+            style={{ width: 28, height: 28, tintColor: '#333' }}
+          />
+        </TouchableOpacity>
+      </View>
 
-      <Text style={styles.title}>Inicio de Cliente</Text>
-      <Text style={styles.subtitle}>Bienvenido, {user.nombre}</Text>
+      <View style={styles.content}>
+        <Text style={styles.welcomeMessage}>Bienvenido,</Text>
+        <Text style={styles.userName}>{user.nombre}</Text>
 
-      <TouchableOpacity
-        style={styles.buttonPrimary}
-        onPress={() => navigation.navigate('Vehiculos')}
-      >
-        <Text style={styles.buttonText}>VER MIS VEHÍCULOS</Text>
-      </TouchableOpacity>
+        <View style={styles.menuContainer}>
+          <TouchableOpacity
+            style={styles.menuButton}
+            onPress={() => navigation.navigate('Vehiculos')}
+          >
+            {/* Reemplazamos Ionicons "car-sport-outline" con Image */}
+            <Image source={require('../assets/car-icon.png')} style={styles.menuIcon} />
+            <Text style={styles.menuButtonText}>Mis Vehículos</Text>
+          </TouchableOpacity>
 
-      {/* 👇 Botón para ver informes */}
-      <TouchableOpacity
-        style={styles.buttonPrimary}
-        onPress={() => navigation.navigate('Informes')}
-      >
-        <Text style={styles.buttonText}>VER INFORMES</Text>
-      </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.menuButton}
+            onPress={() => navigation.navigate('Informes')}
+          >
+            {/* Reemplazamos Ionicons "document-text-outline" con Image */}
+            <Image source={require('../assets/document-icon.png')} style={styles.menuIcon} />
+            <Text style={styles.menuButtonText}>Mis Informes</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
 
-      <TouchableOpacity style={styles.buttonDanger} onPress={logout}>
-        <Text style={styles.buttonText}>CERRAR SESIÓN</Text>
-      </TouchableOpacity>
-    </View>
+      <View style={styles.footer}>
+        <TouchableOpacity style={styles.logoutButton} onPress={logout}>
+          {/* Reemplazamos Ionicons "log-out-outline" con Image */}
+          <Image source={require('../assets/logout-icon.png')} style={styles.logoutIcon} />
+          <Text style={styles.logoutButtonText}>Cerrar Sesión</Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  bell: {
-    position: 'absolute',
-    top: 20,
-    right: 20,
-  },
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: '#fff',
-    justifyContent: 'center',
+    backgroundColor: '#f5f5f5', // Un fondo gris claro
+  },
+  header: {
+    paddingTop: 20,
+    paddingHorizontal: 20,
+    paddingBottom: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
   },
   title: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  notificationButton: {
+    padding: 5,
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+  },
+  welcomeMessage: {
+    fontSize: 22,
+    color: '#666',
+  },
+  userName: {
     fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 10,
+    fontWeight: '700',
+    color: '#333',
+    marginBottom: 40,
   },
-  subtitle: {
+  menuContainer: {
+    width: '100%',
+  },
+  menuButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 12,
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  menuIcon: { // Nuevo estilo para los iconos del menú
+    width: 24,
+    height: 24,
+    tintColor: '#007bff', // Color azul, similar al Ionicons original
+    resizeMode: 'contain',
+  },
+  menuButtonText: {
     fontSize: 18,
-    marginBottom: 30,
+    color: '#333',
+    fontWeight: '600',
+    marginLeft: 15,
   },
-  buttonPrimary: {
-    backgroundColor: '#007bff',
-    paddingVertical: 14,
-    paddingHorizontal: 40,
-    borderRadius: 5,
-    marginVertical: 8,
+  footer: {
+    padding: 20,
+    borderTopWidth: 1,
+    borderTopColor: '#e0e0e0',
   },
-  buttonDanger: {
-    backgroundColor: '#d9534f',
-    paddingVertical: 14,
-    paddingHorizontal: 40,
-    borderRadius: 5,
-    marginVertical: 8,
+  logoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f8d7da',
+    padding: 15,
+    borderRadius: 12,
   },
-  buttonText: {
-    color: '#fff',
+  logoutIcon: { // Nuevo estilo para el icono de cerrar sesión
+    width: 22,
+    height: 22,
+    tintColor: '#dc3545', // Color rojo, similar al Ionicons original
+    resizeMode: 'contain',
+  },
+  logoutButtonText: {
     fontSize: 16,
+    color: '#dc3545',
     fontWeight: 'bold',
-    textTransform: 'uppercase',
-    textAlign: 'center',
+    marginLeft: 10,
   },
 });

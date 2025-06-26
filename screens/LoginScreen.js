@@ -1,17 +1,21 @@
+// frontend/screens/LoginScreen.js
 import React, { useState } from 'react';
 import {
   View,
   TextInput,
-  Button,
-  Alert,
+  // Alert, // Eliminamos la importación de Alert
   StyleSheet,
   Text,
   Image,
   TouchableOpacity,
+  SafeAreaView,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator // Importamos ActivityIndicator
 } from 'react-native';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
-
+// No necesitamos Ionicons, lo eliminamos.
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
@@ -20,13 +24,15 @@ export default function LoginScreen({ navigation }) {
   const [contrasena, setContrasena] = useState('');
   const { login } = useAuth();
 
+  // --- NUEVOS ESTADOS PARA MANEJAR MENSAJES Y CARGA ---
+  const [isLoading, setIsLoading] = useState(false);
+  const [statusMessage, setStatusMessage] = useState({ type: '', text: '' });
+
   // Función para formatear la cédula automáticamente con guiones
   const formatCedula = (text) => {
-    // Elimina cualquier carácter que no sea un dígito
     const cleanedText = text.replace(/[^0-9]/g, '');
     let formattedText = '';
 
-    // Aplica el formato 0-0000-0000
     if (cleanedText.length > 0) {
       formattedText += cleanedText.substring(0, 1);
     }
@@ -40,107 +46,216 @@ export default function LoginScreen({ navigation }) {
   };
 
   const handleLogin = async () => {
-    // Ahora enviamos la 'cedula' tal cual está en el estado (con guiones),
-    // ya que el backend aparentemente espera ese formato.
-    // Hemos eliminado la línea `const cleanedCedula = cedula.replace(/-/g, '');`
-    // y el uso de `cleanedCedula`.
-
     if (!cedula || !contrasena) {
-      Alert.alert('Error', 'Por favor ingrese cédula y contraseña');
+      // Usamos el nuevo sistema de mensajes en lugar de Alert
+      setStatusMessage({ type: 'error', text: 'Por favor ingrese su cédula y contraseña.' });
       return;
     }
 
+    setIsLoading(true);
+    setStatusMessage({ type: '', text: '' }); // Limpiamos mensajes anteriores
+
     try {
-      // Usa la constante API_BASE_URL para construir el endpoint
       const response = await axios.post(`${API_BASE_URL}/api/login`, {
-        cedula, // Enviamos 'cedula' directamente, que ahora incluye guiones
+        cedula,
         contrasena,
       });
-
-      const usuario = response.data.usuario;
-      const token = response.data.token;
-
-      // Guardar sesión en contexto y AsyncStorage
+      const { usuario, token } = response.data;
       await login(usuario, token);
-
-      Alert.alert('Bienvenido', `Hola, ${usuario.nombre}`);
-
-      // NO hacer navigation.replace aquí, el cambio de contexto ya hará navegar
+      // El cambio de pantalla se maneja automáticamente por el contexto de autenticación
+      // No necesitamos un mensaje de éxito aquí, ya que la navegación ocurrirá
     } catch (error) {
-      Alert.alert('Error', error.response?.data?.error || 'Error en el inicio de sesión');
+      console.log(error.response?.data || error.message);
+      const errorMessage = error.response?.data?.error || 'No se pudo iniciar sesión. Verifique sus credenciales.';
+      // Mostramos mensaje de error
+      setStatusMessage({ type: 'error', text: errorMessage });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.welcomeMessage}>Bienvenid@ al taller mecánico JYC Motors</Text>
-      <Image source={require('../images/logo.jpg')} style={styles.logo} />
-      <View style={styles.form}>
-        <TextInput
-          style={styles.input}
-          placeholder="Cédula (0-0000-0000)"
-          value={cedula}
-          onChangeText={formatCedula} // Usa la nueva función de formateo
-          keyboardType="numeric"
-          autoCapitalize="none"
-          maxLength={11} // Limita la longitud para el formato (ej: 1-2345-6789 tiene 11 caracteres)
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Contraseña"
-          value={contrasena}
-          onChangeText={setContrasena}
-          secureTextEntry
-        />
-        <View style={{ marginTop: 12, width: '100%' }}>
-          <Button title="Ingresar" onPress={handleLogin} />
+    <SafeAreaView style={styles.container}>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.keyboardView}
+      >
+        <View style={styles.content}>
+          <View style={styles.header}>
+            <Image source={require('../images/logo.jpg')} style={styles.logo} />
+            <Text style={styles.title}>Bienvenido</Text>
+            <Text style={styles.subtitle}>Inicia sesión para continuar</Text>
+          </View>
+          
+          {/* --- ZONA DE MENSAJES DE ESTADO --- */}
+          {statusMessage.text ? (
+            <View style={[
+              styles.statusContainer,
+              statusMessage.type === 'success' ? styles.successContainer : styles.errorContainer
+            ]}>
+              <Text style={styles.statusText}>{statusMessage.text}</Text>
+            </View>
+          ) : null}
+
+          <View style={styles.inputContainer}>
+            <Image source={require('../assets/user-icon.png')} style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              placeholder="Cédula (0-0000-0000)"
+              placeholderTextColor="#aaa"
+              value={cedula}
+              onChangeText={formatCedula}
+              keyboardType="numeric"
+              autoCapitalize="none"
+              maxLength={11}
+            />
+          </View>
+
+          <View style={styles.inputContainer}>
+            <Image source={require('../assets/lock-icon.png')} style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              placeholder="Contraseña"
+              placeholderTextColor="#aaa"
+              value={contrasena}
+              onChangeText={setContrasena}
+              secureTextEntry
+            />
+          </View>
+
+          <TouchableOpacity style={styles.loginButton} onPress={handleLogin} disabled={isLoading}>
+            {isLoading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.loginButtonText}>Ingresar</Text>
+            )}
+          </TouchableOpacity>
+
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>¿No tienes una cuenta? </Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+              <Text style={styles.registerLink}>Regístrate</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-        <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-          <Text style={styles.registerText}>¿No tienes cuenta? Regístrate</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#fff'
-  },
-  logo: {
-    width: 150,
-    height: 150,
-    resizeMode: 'contain',
-    marginBottom: 20,
-  },
-  form: {
-    width: '100%',
-    maxWidth: 350,
-    alignItems: 'center',
-  },
-  input: {
-    width: '100%',
-    height: 40,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    marginBottom: 12,
-    paddingHorizontal: 10,
-    borderRadius: 4,
-  },
-  registerText: {
-    marginTop: 20,
-    color: 'blue',
-    textAlign: 'center',
-  },
-  welcomeMessage: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 20,
-    color: '#333',
-  },
+    container: {
+        flex: 1,
+        backgroundColor: '#f5f5f5',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    keyboardView: {
+        width: '100%',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    content: {
+        width: '100%',
+        maxWidth: 420, 
+        paddingHorizontal: 30,
+        alignItems: 'center',
+    },
+    header: {
+        alignItems: 'center',
+        marginBottom: 40,
+    },
+    logo: {
+        width: 225, 
+        height: 150,
+        borderRadius: 20,
+        marginBottom: 20,
+    },
+    title: {
+        fontSize: 32,
+        fontWeight: 'bold',
+        color: '#333',
+        marginBottom: 8,
+    },
+    subtitle: {
+        fontSize: 16,
+        color: '#666',
+    },
+    // Estilos para los mensajes de estado (copiados de otras pantallas)
+    statusContainer: {
+        width: '100%',
+        padding: 15,
+        borderRadius: 12,
+        marginBottom: 20,
+        alignItems: 'center',
+        borderWidth: 1,
+    },
+    successContainer: {
+        backgroundColor: '#d4edda',
+        borderColor: '#c3e6cb',
+    },
+    errorContainer: {
+        backgroundColor: '#f8d7da',
+        borderColor: '#f5c6cb',
+    },
+    statusText: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#155724', // Color de texto para éxito (se puede ajustar para error)
+    },
+    inputContainer: {
+        width: '100%',
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        marginBottom: 16,
+        paddingHorizontal: 15,
+        borderWidth: 1,
+        borderColor: '#e0e0e0',
+    },
+    inputIcon: {
+        width: 22, // Tamaño del icono
+        height: 22, // Tamaño del icono
+        marginRight: 10,
+        tintColor: '#888', // tintColor funciona para cambiar el color de imágenes png
+    },
+    input: {
+        flex: 1,
+        height: 55,
+        fontSize: 16,
+        color: '#333',
+    },
+    loginButton: {
+        width: '100%',
+        backgroundColor: '#007bff',
+        padding: 18,
+        borderRadius: 12,
+        alignItems: 'center',
+        marginTop: 10,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 5,
+    },
+    loginButtonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+    footer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        marginTop: 30,
+    },
+    footerText: {
+        fontSize: 14,
+        color: '#888',
+    },
+    registerLink: {
+        fontSize: 14,
+        color: '#007bff',
+        fontWeight: 'bold',
+    },
 });

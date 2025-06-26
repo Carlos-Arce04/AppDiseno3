@@ -18,6 +18,7 @@ import ClienteRevisionScreen from './screens/ClienteRevisionScreen';
 import NotificacionesScreen from './screens/NotificacionesScreen';
 import GenerarInformeScreen from './screens/GenerarInformeScreen';
 import ClienteInformesScreen from './screens/ClienteInformesScreen';
+import RegisterAdminScreen from './screens/RegisterAdminScreen'; // <-- 1. IMPORTAR LA NUEVA PANTALLA
 
 // Asegúrate de que la imagen 'flecha.png' esté en tu carpeta 'assets'
 const ArrowBackIcon = require('./assets/flecha.png'); 
@@ -55,7 +56,7 @@ function AppRoutes() {
         user.rol === 'administrador' ? (
           <>
             {/* Opcional: Para pantallas que NO deben tener flecha de regreso */}
-            <Stack.Screen name="AdminHome" component={AdminHomeScreen} options={{ headerLeft: () => null }}/>
+            <Stack.Screen name="Admin" component={AdminHomeScreen} options={{ headerLeft: () => null }}/>
             <Stack.Screen name="Vehiculos" component={VehiculosScreen} />
             <Stack.Screen
               name="AgregarRepuesto"
@@ -77,11 +78,17 @@ function AppRoutes() {
               component={GenerarInformeScreen}
               options={{ title: 'Generar Informe' }}
             />
+            {/* --- 2. AÑADIR LA PANTALLA AL STACK DEL ADMIN --- */}
+            <Stack.Screen
+              name="RegisterAdmin"
+              component={RegisterAdminScreen}
+              options={{ title: 'Registrar Administrador' }}
+            />
           </>
         ) : (
           <>
             {/* Opcional: Para pantallas que NO deben tener flecha de regreso */}
-            <Stack.Screen name="ClienteHome" component={ClienteHomeScreen} options={{ headerLeft: () => null }}/>
+            <Stack.Screen name="Cliente" component={ClienteHomeScreen} options={{ headerLeft: () => null }}/>
             <Stack.Screen name="Vehiculos" component={VehiculosScreen} />
             <Stack.Screen
               name="Notificaciones"
