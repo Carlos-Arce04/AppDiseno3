@@ -1,14 +1,14 @@
 {
   "expo": {
-    "name": "appdiseno3",
+    "name": "JyC Motors",
     "slug": "appdiseno3",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/logo.png", 
+    "icon": "./images/logo2.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/logo.png", 
+      "image": "./images/logo2.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -18,14 +18,14 @@
     "android": {
       "usesCleartextTraffic": true,
       "adaptiveIcon": {
-        "foregroundImage": "./assets/logo.png", 
+        "foregroundImage": "./images/logo2.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
       "package": "com.carlos120.appdiseno3"
     },
     "web": {
-      "favicon": "./assets/logo.png" 
+      "favicon": "./images/logo2.png"
     }
   }
 }
