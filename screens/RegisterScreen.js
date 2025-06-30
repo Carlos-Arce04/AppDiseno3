@@ -1,9 +1,9 @@
-// frontend/screens/RegisterScreen.js
+
 import React, { useState } from 'react';
 import {
   View,
   TextInput,
-  // Alert, // Eliminamos la importación de Alert ya que usaremos un sistema de mensajes personalizado
+  Alert, 
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -11,12 +11,12 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Image, // Asegúrate de importar Image para usar imágenes PNG
-  ActivityIndicator // Importamos ActivityIndicator para el estado de carga
+  Image, 
+  ActivityIndicator 
 } from 'react-native';
 import axios from 'axios';
-// Ya no necesitamos Ionicons, lo eliminamos.
-import { useAuth } from '../context/AuthContext'; // Importamos useAuth si es necesario para el contexto (aunque aquí no se usa axiosAuth directamente)
+
+import { useAuth } from '../context/AuthContext';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
@@ -27,11 +27,11 @@ export default function RegisterScreen({ navigation }) {
   const [correo, setCorreo] = useState('');
   const [contrasena, setContrasena] = useState('');
   
-  // --- NUEVOS ESTADOS PARA MANEJAR MENSAJES Y CARGA ---
+
   const [isLoading, setIsLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState({ type: '', text: '' });
 
-  // Función para formatear la cédula automáticamente con guiones
+
   const formatCedula = (text) => {
     const cleanedText = text.replace(/[^0-9]/g, '');
     let formattedText = '';
@@ -41,7 +41,7 @@ export default function RegisterScreen({ navigation }) {
     setCedula(formattedText);
   };
   
-  // Función para formatear el teléfono automáticamente con guiones
+
   const formatTelefono = (text) => {
     const cleanedText = text.replace(/[^0-9]/g, '');
     let formattedText = '';
@@ -50,48 +50,45 @@ export default function RegisterScreen({ navigation }) {
     setTelefono(formattedText);
   };
 
-  // Manejador del botón de registro
+ 
   const handleRegister = async () => {
-    // Validación de campos incompletos
+   
     if (!cedula || !nombre || !telefono || !correo || !contrasena) {
       setStatusMessage({ type: 'error', text: 'Por favor complete todos los campos.' });
       return;
     }
 
     setIsLoading(true);
-    setStatusMessage({ type: '', text: '' }); // Limpiamos mensajes anteriores
+    setStatusMessage({ type: '', text: '' }); 
 
     try {
-      // Envío de la solicitud de registro al backend
+    
       await axios.post(`${API_BASE_URL}/api/register`, {
         cedula,
         nombre,
         telefono,
         correo,
         contrasena,
-        rol: 'cliente', // El rol se envía como 'cliente' por defecto
+        rol: 'cliente', 
       });
       
-      // Limpiamos el formulario para dar feedback visual inmediato
+    
       setCedula('');
       setNombre('');
       setTelefono('');
       setCorreo('');
       setContrasena('');
 
-      // Mostramos mensaje de éxito
       setStatusMessage({ type: 'success', text: '¡Registro Exitoso! Tu cuenta ha sido creada.' });
       
-      // Esperamos un momento para que el usuario lea el mensaje y luego volvemos
       setTimeout(() => {
         navigation.goBack();
       }, 2500);
 
     } catch (error) {
-      // Manejo de errores en caso de que la solicitud falle
+  
       console.log(error.response?.data || error.message);
       const errorMessage = error.response?.data?.error || 'Error al registrar usuario';
-      // Mostramos mensaje de error
       setStatusMessage({ type: 'error', text: errorMessage });
     } finally {
       setIsLoading(false);
@@ -105,14 +102,13 @@ export default function RegisterScreen({ navigation }) {
         style={styles.keyboardView}
       >
         <ScrollView contentContainerStyle={styles.container}>
-            {/* Contenedor principal que limita el ancho en la web */}
             <View style={styles.content}>
               <View style={styles.header}>
                 <Text style={styles.mainTitle}>Crear Cuenta</Text>
                 <Text style={styles.mainSubtitle}>Ingresa tus datos para registrarte</Text>
               </View>
 
-              {/* --- ZONA DE MENSAJES DE ESTADO --- */}
+
               {statusMessage.text ? (
                 <View style={[
                   styles.statusContainer,
@@ -122,25 +118,24 @@ export default function RegisterScreen({ navigation }) {
                 </View>
               ) : null}
 
-              {/* Input para Cédula con icono PNG */}
+         
               <View style={styles.inputContainer}>
                 <Image source={require('../assets/id-card-icon.png')} style={styles.inputIcon} />
                 <TextInput style={styles.input} placeholder="Cédula (0-0000-0000)" value={cedula} onChangeText={formatCedula} keyboardType="numeric" maxLength={11} placeholderTextColor="#aaa" />
               </View>
 
-              {/* Input para Nombre completo con icono PNG */}
+        
               <View style={styles.inputContainer}>
                 <Image source={require('../assets/user-icon.png')} style={styles.inputIcon} />
                 <TextInput style={styles.input} placeholder="Nombre completo" value={nombre} onChangeText={setNombre} placeholderTextColor="#aaa" />
               </View>
 
-              {/* Input para Teléfono con icono PNG */}
+          
               <View style={styles.inputContainer}>
                 <Image source={require('../assets/phone-icon.png')} style={styles.inputIcon} />
                 <TextInput style={styles.input} placeholder="Teléfono (0000-0000)" value={telefono} onChangeText={formatTelefono} keyboardType="numeric" maxLength={9} placeholderTextColor="#aaa" />
               </View>
 
-              {/* Input para Correo electrónico con icono PNG */}
               <View style={styles.inputContainer}>
                 <Image source={require('../assets/mail-icon.png')} style={styles.inputIcon} />
                 <TextInput style={styles.input} placeholder="Correo electrónico" value={correo} onChangeText={setCorreo} keyboardType="email-address" autoCapitalize="none" placeholderTextColor="#aaa" />
@@ -151,7 +146,7 @@ export default function RegisterScreen({ navigation }) {
                 <TextInput style={styles.input} placeholder="Contraseña" value={contrasena} onChangeText={setContrasena} secureTextEntry placeholderTextColor="#aaa" />
               </View>
 
-              {/* Botón de registro */}
+      
               <TouchableOpacity style={styles.registerButton} onPress={handleRegister} disabled={isLoading}>
                 {isLoading ? (
                   <ActivityIndicator color="#fff" />
@@ -160,7 +155,7 @@ export default function RegisterScreen({ navigation }) {
                 )}
               </TouchableOpacity>
 
-              {/* Enlace para iniciar sesión */}
+            
               <View style={styles.footer}>
                 <Text style={styles.footerText}>¿Ya tienes una cuenta? </Text>
                 <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -177,19 +172,19 @@ export default function RegisterScreen({ navigation }) {
 const styles = StyleSheet.create({
     safeArea: {
         flex: 1,
-        backgroundColor: '#f5f5f5', // Mismo color de fondo que Login
+        backgroundColor: '#f5f5f5', 
     },
     keyboardView: {
         flex: 1,
     },
-    // Contenedor del ScrollView que centra todo
+   
     container: {
         flexGrow: 1,
         justifyContent: 'center',
         alignItems: 'center',
         padding: 20,
     },
-    // Contenedor del formulario con ancho máximo, igual que en Login
+    
     content: {
         width: '100%',
         maxWidth: 420,
@@ -211,7 +206,7 @@ const styles = StyleSheet.create({
         marginTop: 8,
         textAlign: 'center',
     },
-    // Estilos para los mensajes de estado (copiados de RegisterAdminScreen)
+ 
     statusContainer: {
         width: '100%',
         padding: 15,
@@ -232,7 +227,7 @@ const styles = StyleSheet.create({
     statusText: {
         fontSize: 16,
         fontWeight: '600',
-        color: '#155724', // Color de texto para éxito (se puede ajustar para error)
+        color: '#155724', 
     },
     inputContainer: {
         width: '100%',
@@ -246,11 +241,11 @@ const styles = StyleSheet.create({
         borderColor: '#e0e0e0',
     },
     inputIcon: {
-        width: 24, // Aumentado el tamaño del icono
-        height: 24, // Aumentado el tamaño del icono
+        width: 24, 
+        height: 24, 
         marginRight: 10,
         tintColor: '#888',
-        resizeMode: 'contain', // Asegura que la imagen se ajuste dentro de los límites
+        resizeMode: 'contain', s
     },
     input: {
         flex: 1,
@@ -258,10 +253,10 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#333',
     },
-    // Botón de registro con el mismo estilo que el de Login
+  
     registerButton: {
         width: '100%',
-        backgroundColor: '#28a745', // Cambiado a verde
+        backgroundColor: '#28a745', 
         padding: 18,
         borderRadius: 12,
         alignItems: 'center',

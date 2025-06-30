@@ -1,10 +1,10 @@
-// frontend/screens/ClienteHomeScreen.js
+
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Image } from 'react-native';
 import { useAuth } from '../context/AuthContext';
-// Eliminamos la importación de Ionicons ya que los reemplazaremos por imágenes PNG.
 
-// Ruta del icono de libro (este ya está bien y se mantiene)
+
+
 const BookIcon = require('../assets/book.png'); 
 
 export default function ClienteHomeScreen({ navigation }) {
@@ -18,7 +18,7 @@ export default function ClienteHomeScreen({ navigation }) {
           style={styles.notificationButton}
           onPress={() => navigation.navigate('Notificaciones')}
         >
-          {/* Icono de libro que ya estaba implementado con Image y se mantiene */}
+    
           <Image 
             source={BookIcon}
             style={{ width: 28, height: 28, tintColor: '#333' }}
@@ -35,7 +35,7 @@ export default function ClienteHomeScreen({ navigation }) {
             style={styles.menuButton}
             onPress={() => navigation.navigate('Vehiculos')}
           >
-            {/* Reemplazamos Ionicons "car-sport-outline" con Image */}
+           
             <Image source={require('../assets/car-icon.png')} style={styles.menuIcon} />
             <Text style={styles.menuButtonText}>Mis Vehículos</Text>
           </TouchableOpacity>
@@ -44,7 +44,7 @@ export default function ClienteHomeScreen({ navigation }) {
             style={styles.menuButton}
             onPress={() => navigation.navigate('Informes')}
           >
-            {/* Reemplazamos Ionicons "document-text-outline" con Image */}
+       
             <Image source={require('../assets/document-icon.png')} style={styles.menuIcon} />
             <Text style={styles.menuButtonText}>Mis Informes</Text>
           </TouchableOpacity>
@@ -53,7 +53,7 @@ export default function ClienteHomeScreen({ navigation }) {
 
       <View style={styles.footer}>
         <TouchableOpacity style={styles.logoutButton} onPress={logout}>
-          {/* Reemplazamos Ionicons "log-out-outline" con Image */}
+      
           <Image source={require('../assets/logout-icon.png')} style={styles.logoutIcon} />
           <Text style={styles.logoutButtonText}>Cerrar Sesión</Text>
         </TouchableOpacity>
@@ -65,7 +65,7 @@ export default function ClienteHomeScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5', // Un fondo gris claro
+    backgroundColor: '#f5f5f5', 
   },
   header: {
     paddingTop: 20,
@@ -114,10 +114,10 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 4,
   },
-  menuIcon: { // Nuevo estilo para los iconos del menú
+  menuIcon: { 
     width: 24,
     height: 24,
-    tintColor: '#007bff', // Color azul, similar al Ionicons original
+    tintColor: '#007bff', 
     resizeMode: 'contain',
   },
   menuButtonText: {
@@ -139,10 +139,10 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 12,
   },
-  logoutIcon: { // Nuevo estilo para el icono de cerrar sesión
+  logoutIcon: { 
     width: 22,
     height: 22,
-    tintColor: '#dc3545', // Color rojo, similar al Ionicons original
+    tintColor: '#dc3545', 
     resizeMode: 'contain',
   },
   logoutButtonText: {

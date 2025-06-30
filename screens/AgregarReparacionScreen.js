@@ -1,4 +1,4 @@
-// frontend/screens/AgregarReparacionScreen.js
+
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   View,
@@ -11,11 +11,11 @@ import {
   SafeAreaView,
   ActivityIndicator,
   RefreshControl,
-  Image // Asegúrate de importar Image
+  Image 
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { useAuth } from '../context/AuthContext';
-// Eliminamos la importación de Ionicons ya que los reemplazaremos por imágenes PNG.
+
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
@@ -26,7 +26,7 @@ const ReparacionItem = ({ item }) => {
   return (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
-        {/* Icono de construcción (build-outline) reemplazado por imagen PNG */}
+      
         <Image source={require('../assets/build-icon.png')} style={styles.cardItemIcon} />
         <Text style={styles.cardTitle}>{item.repuesto_nombre}</Text>
       </View>
@@ -156,7 +156,7 @@ export default function AgregarReparacionScreen() {
       <View style={styles.header}>
         <Text style={styles.title}>Reparaciones</Text>
         <TouchableOpacity style={styles.addButton} onPress={openModal}>
-          {/* Icono de añadir (add) reemplazado por imagen PNG */}
+       
           <Image source={require('../assets/add-icon.png')} style={styles.addButtonIcon} />
           <Text style={styles.addButtonText}>Nueva</Text>
         </TouchableOpacity>
@@ -192,13 +192,13 @@ export default function AgregarReparacionScreen() {
             ) : null}
 
             <Text style={styles.label}>Repuesto:</Text>
-            {/* --- CONTENEDOR MEJORADO PARA EL PICKER --- */}
+      
             <View style={styles.pickerContainer}>
               <Picker
                 selectedValue={form.repuesto_id}
                 onValueChange={(v) => setForm({ ...form, repuesto_id: v })}
                 style={styles.picker}
-                itemStyle={styles.pickerItem} // Aplicar estilo a los ítems del Picker (solo para iOS)
+                itemStyle={styles.pickerItem} 
               >
                 <Picker.Item label="-- Seleccione un repuesto --" value="" />
                 {repuestos.map(r => (
@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
   },
-  addButtonIcon: { // Estilo para el icono del botón "Nueva"
+  addButtonIcon: { 
     width: 24,
     height: 24,
     tintColor: '#fff',
@@ -314,7 +314,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#f0f0f0',
     paddingBottom: 12,
   },
-  cardItemIcon: { // Estilo para el icono dentro de la tarjeta de reparación
+  cardItemIcon: { 
     width: 24,
     height: 24,
     tintColor: '#007bff',
@@ -432,7 +432,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   pickerItem: {
-    fontSize: 16, // Para que el texto interno tenga el mismo tamaño
+    fontSize: 16, 
   },
   modalButtons: {
     flexDirection: 'row',

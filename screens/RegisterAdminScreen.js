@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import {
   View,
   TextInput,
-  Alert, // Aunque se usa menos, aún se podría usar para casos específicos no cubiertos por statusMessage
+  Alert, 
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -12,23 +12,22 @@ import {
   Platform,
   ScrollView,
   ActivityIndicator,
-  Image // Asegúrate de importar Image para usar imágenes PNG
+  Image 
 } from 'react-native';
 import axios from 'axios';
-// Eliminamos la importación de Ionicons.
-import { useAuth } from '../context/AuthContext'; // Importamos useAuth para usar axiosAuth
+import { useAuth } from '../context/AuthContext'; 
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
 export default function RegisterAdminScreen({ navigation }) {
-  const { axiosAuth } = useAuth(); // Usamos el axiosAuth del admin logueado
+  const { axiosAuth } = useAuth(); 
   const [cedula, setCedula] = useState('');
   const [nombre, setNombre] = useState('');
   const [telefono, setTelefono] = useState('');
   const [correo, setCorreo] = useState('');
   const [contrasena, setContrasena] = useState('');
   
-  // --- NUEVOS ESTADOS PARA MANEJAR MENSAJES Y CARGA ---
+ 
   const [isLoading, setIsLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState({ type: '', text: '' });
 
@@ -52,36 +51,34 @@ export default function RegisterAdminScreen({ navigation }) {
 
   const handleRegister = async () => {
     if (!cedula || !nombre || !telefono || !correo || !contrasena) {
-      // Usamos el nuevo sistema de mensajes en lugar de Alert
       setStatusMessage({ type: 'error', text: 'Por favor complete todos los campos.' });
       return;
     }
 
     setIsLoading(true);
-    setStatusMessage({ type: '', text: '' }); // Limpiamos mensajes anteriores
+    setStatusMessage({ type: '', text: '' }); 
 
     try {
-      // Usamos axiosAuth para asegurar que la petición la hace un admin autenticado
+   
       await axiosAuth.post(`${API_BASE_URL}/api/register`, {
         cedula,
         nombre,
         telefono,
         correo,
         contrasena,
-        rol: 'administrador', // Se registra como admin
+        rol: 'administrador', 
       });
       
-      // Limpiamos el formulario para dar feedback visual inmediato
       setCedula('');
       setNombre('');
       setTelefono('');
       setCorreo('');
       setContrasena('');
 
-      // Mostramos mensaje de éxito
+    
       setStatusMessage({ type: 'success', text: '¡Registro Exitoso! El nuevo administrador ha sido creado.' });
       
-      // Esperamos un momento para que el usuario lea el mensaje y luego volvemos
+
       setTimeout(() => {
         navigation.goBack();
       }, 2500);
@@ -89,7 +86,7 @@ export default function RegisterAdminScreen({ navigation }) {
     } catch (error) {
       console.log(error.response?.data || error.message);
       const errorMessage = error.response?.data?.error || 'Error al registrar administrador';
-      // Mostramos mensaje de error
+      
       setStatusMessage({ type: 'error', text: errorMessage });
     } finally {
       setIsLoading(false);
@@ -109,7 +106,7 @@ export default function RegisterAdminScreen({ navigation }) {
                 <Text style={styles.mainSubtitle}>Complete los datos del nuevo administrador</Text>
               </View>
 
-              {/* --- ZONA DE MENSAJES DE ESTADO --- */}
+         
               {statusMessage.text ? (
                 <View style={[
                   styles.statusContainer,
@@ -120,31 +117,30 @@ export default function RegisterAdminScreen({ navigation }) {
               ) : null}
 
               <View style={styles.inputContainer}>
-                {/* Icono de cédula reemplazado por imagen PNG */}
+   
                 <Image source={require('../assets/id-card-icon.png')} style={styles.inputIcon} />
                 <TextInput style={styles.input} placeholder="Cédula (0-0000-0000)" value={cedula} onChangeText={formatCedula} keyboardType="numeric" maxLength={11} placeholderTextColor="#aaa" />
               </View>
 
               <View style={styles.inputContainer}>
-                {/* Icono de persona reemplazado por imagen PNG */}
+
                 <Image source={require('../assets/user-icon.png')} style={styles.inputIcon} />
                 <TextInput style={styles.input} placeholder="Nombre completo" value={nombre} onChangeText={setNombre} placeholderTextColor="#aaa" />
               </View>
 
               <View style={styles.inputContainer}>
-                {/* Icono de teléfono reemplazado por imagen PNG */}
+
                 <Image source={require('../assets/phone-icon.png')} style={styles.inputIcon} />
                 <TextInput style={styles.input} placeholder="Teléfono (0000-0000)" value={telefono} onChangeText={formatTelefono} keyboardType="numeric" maxLength={9} placeholderTextColor="#aaa" />
               </View>
 
               <View style={styles.inputContainer}>
-                {/* Icono de correo reemplazado por imagen PNG */}
+
                 <Image source={require('../assets/mail-icon.png')} style={styles.inputIcon} />
                 <TextInput style={styles.input} placeholder="Correo electrónico" value={correo} onChangeText={setCorreo} keyboardType="email-address" autoCapitalize="none" placeholderTextColor="#aaa" />
               </View>
 
               <View style={styles.inputContainer}>
-                {/* Icono de candado reemplazado por imagen PNG */}
                 <Image source={require('../assets/lock-icon.png')} style={styles.inputIcon} />
                 <TextInput style={styles.input} placeholder="Contraseña" value={contrasena} onChangeText={setContrasena} secureTextEntry placeholderTextColor="#aaa" />
               </View>
@@ -198,7 +194,7 @@ const styles = StyleSheet.create({
         marginTop: 8,
         textAlign: 'center',
     },
-    // Estilos para los mensajes de estado
+  
     statusContainer: {
         width: '100%',
         padding: 15,
@@ -219,7 +215,7 @@ const styles = StyleSheet.create({
     statusText: {
         fontSize: 16,
         fontWeight: '600',
-        color: '#155724', // Color de texto para éxito
+        color: '#155724', 
     },
     inputContainer: {
         width: '100%',
@@ -232,12 +228,12 @@ const styles = StyleSheet.create({
         borderWidth: 1, 
         borderColor: '#e0e0e0',
     },
-    inputIcon: { // Reutilizamos el estilo inputIcon para todos los iconos de input
-        width: 22, // Tamaño del icono
-        height: 22, // Tamaño del icono
+    inputIcon: {
+        width: 22, 
+        height: 22, 
         marginRight: 10,
-        tintColor: '#888', // tintColor funciona para cambiar el color de imágenes png
-        resizeMode: 'contain', // Asegura que la imagen se ajuste dentro de los límites
+        tintColor: '#888', 
+        resizeMode: 'contain', 
     },
     input: {
         flex: 1,

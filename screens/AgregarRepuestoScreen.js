@@ -1,4 +1,4 @@
-// frontend/screens/AgregarRepuestoScreen.js
+
 import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
@@ -11,10 +11,9 @@ import {
   SafeAreaView,
   ActivityIndicator,
   RefreshControl,
-  Image // Asegúrate de importar Image para el icono
+  Image 
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
-// import { Ionicons } from '@expo/vector-icons'; // ¡Esta línea ha sido eliminada!
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
@@ -38,7 +37,7 @@ export default function AgregarRepuestoScreen() {
     const [modalVisible, setModalVisible] = useState(false);
     const [formData, setFormData] = useState({ id: '', nombre: '', precio: '' });
 
-    // Estados para el modal
+    
     const [isSaving, setIsSaving] = useState(false);
     const [modalStatus, setModalStatus] = useState({ type: '', text: '' });
 
@@ -60,7 +59,7 @@ export default function AgregarRepuestoScreen() {
 
     const openModalForNew = () => {
         setFormData({ id: '', nombre: '', precio: '' });
-        setModalStatus({ type: '', text: '' }); // Limpiar mensajes al abrir
+        setModalStatus({ type: '', text: '' }); 
         setModalVisible(true);
     };
 
@@ -99,7 +98,7 @@ export default function AgregarRepuestoScreen() {
             <View style={styles.header}>
                 <Text style={styles.title}>Repuestos</Text>
                 <TouchableOpacity style={styles.addButton} onPress={openModalForNew}>
-                    {/* Icono de añadir (add) reemplazado por imagen PNG */}
+                
                     <Image source={require('../assets/add-icon.png')} style={styles.addButtonIcon} />
                     <Text style={styles.addButtonText}>Nuevo</Text>
                 </TouchableOpacity>
@@ -185,7 +184,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
   },
-  // ESTILO PARA EL ICONO DE AÑADIR (COPIADO DE ADMINCREARREVISIONSCREEN)
+
   addButtonIcon: {
     width: 24,
     height: 24,
@@ -219,7 +218,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#333',
-    flex: 1, // Para que el texto se ajuste si es muy largo
+    flex: 1, 
   },
   cardId: {
     fontSize: 14,
@@ -232,7 +231,7 @@ const styles = StyleSheet.create({
   cardPrice: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#28a745', // Verde para el precio
+    color: '#28a745',
   },
   emptyContainer: {
     flex: 1,
@@ -244,7 +243,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#888',
   },
-  // Modal Styles
+
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',

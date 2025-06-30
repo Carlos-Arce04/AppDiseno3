@@ -11,27 +11,27 @@ import {
   ActivityIndicator,
   RefreshControl,
   ScrollView,
-  Image // Asegúrate de importar Image
+  Image 
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { useAuth } from '../context/AuthContext';
-// Eliminamos la importación de Ionicons.
+
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
-// Función para obtener el color del estado, reutilizada de NotificacionesScreen
+// Función para obtener el color del estado
 const getStatusColor = (estado) => {
   switch (estado) {
     case 'entrega':
-      return '#28a745'; // Verde
+      return '#28a745'; 
     case 'reparacion':
-      return '#fd7e14'; // Naranja
-    case 'en_espera': // Se ajusta para el valor real recibido del backend (con guion bajo)
-      return '#007bff'; // Azul
+      return '#fd7e14'; 
+    case 'en_espera': 
+      return '#007bff'; 
     case 'cancelado':
-      return '#dc3545'; // Rojo
+      return '#dc3545'; 
     default:
-      return '#6c757d'; // Gris por defecto
+      return '#6c757d';
   }
 };
 
@@ -40,14 +40,14 @@ const RevisionItem = ({ item }) => {
   const fecha = new Date(item.fecha_revision);
   const fechaFormateada = fecha.toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' });
   const repuestosUsados = Array.isArray(item.repuestos_usados) ? item.repuestos_usados : [];
-  const statusColor = getStatusColor(item.estado); // Obtener el color del estado
+  const statusColor = getStatusColor(item.estado); 
 
-  // Función para formatear el estado para la visualización en el frontend
+ 
   const formattedEstado = (estado) => {
     if (estado === 'en_espera') {
       return 'En espera';
     }
-    // Puedes añadir más casos de formateo aquí si es necesario
+   
     return estado;
   };
 
@@ -64,9 +64,7 @@ const RevisionItem = ({ item }) => {
         <Text style={styles.fieldValue}>{item.mecanico}</Text>
         <Text style={styles.fieldLabel}>Detalle de Avería:</Text>
         <Text style={styles.fieldValue}>{item.detalle_averia}</Text>
-        {/* El estado ahora se muestra en el header con el badge */}
-        {/* <Text style={styles.fieldLabel}>Estado:</Text>
-        <Text style={styles.fieldValue}>{item.estado}</Text> */}
+     
       </View>
       {repuestosUsados.length > 0 && (
         <View style={styles.cardFooter}>
@@ -221,7 +219,7 @@ export default function AdminCrearRevisionScreen() {
       <View style={styles.header}>
         <Text style={styles.title}>Revisiones</Text>
         <TouchableOpacity style={styles.addButton} onPress={openModal}>
-          {/* Icono de añadir (add) reemplazado por imagen PNG */}
+       
           <Image source={require('../assets/add-icon.png')} style={styles.addButtonIcon} />
           <Text style={styles.addButtonText}>Nueva</Text>
         </TouchableOpacity>
@@ -263,7 +261,7 @@ export default function AdminCrearRevisionScreen() {
                   selectedValue={form.placa} 
                   onValueChange={v => setForm(f => ({ ...f, placa: v }))} 
                   style={styles.picker}
-                  itemStyle={styles.pickerItem} // Aplicar estilo a los ítems del Picker (solo para iOS)
+                  itemStyle={styles.pickerItem} 
                 >
                   <Picker.Item label="-- Seleccione una placa --" value="" />
                   {vehiculos.map(v => <Picker.Item key={v.placa} label={v.placa} value={v.placa} />)}
@@ -295,7 +293,7 @@ export default function AdminCrearRevisionScreen() {
                   selectedValue="" 
                   onValueChange={addRepuesto} 
                   style={styles.picker}
-                  itemStyle={styles.pickerItem} // Aplicar estilo a los ítems del Picker (solo para iOS)
+                  itemStyle={styles.pickerItem} 
                 >
                   <Picker.Item label="-- Seleccione un repuesto --" value="" />
                   {reparaciones.map(r => <Picker.Item key={r.id} label={`${r.repuesto_nombre} (x${r.cantidad})`} value={r.id.toString()} />)}
@@ -309,7 +307,7 @@ export default function AdminCrearRevisionScreen() {
                     <View key={l.id} style={styles.addedItem}>
                       <Text style={styles.addedItemText}>• {l.repuesto_nombre}</Text>
                       <TouchableOpacity onPress={() => removeRepuesto(l.id)}>
-                        {/* Icono de cerrar (close-circle) reemplazado por imagen PNG */}
+                       
                         <Image source={require('../assets/close-circle-icon.png')} style={styles.removeItemIcon} />
                       </TouchableOpacity>
                     </View>
@@ -338,7 +336,7 @@ const styles = StyleSheet.create({
   header: { padding: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   title: { fontSize: 28, fontWeight: 'bold', color: '#333' },
   addButton: { flexDirection: 'row', backgroundColor: '#007bff', paddingVertical: 10, paddingHorizontal: 14, borderRadius: 8, alignItems: 'center' },
-  addButtonIcon: { // Estilo para el icono del botón "Nueva"
+  addButtonIcon: { 
     width: 24,
     height: 24,
     tintColor: '#fff',
@@ -373,7 +371,7 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: 18, fontWeight: 'bold', color: '#333' },
   placaText: { fontWeight: '600', color: '#007bff' },
   cardDate: { fontSize: 13, color: '#999' },
-  // --- Nuevos estilos para el badge de estado ---
+  
   statusBadge: {
     paddingVertical: 4,
     paddingHorizontal: 10,
@@ -385,7 +383,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textTransform: 'uppercase',
   },
-  // --- Fin nuevos estilos ---
+  
   cardBody: { paddingVertical: 10 },
   fieldLabel: { fontSize: 14, fontWeight: 'bold', color: '#888', marginTop: 8 },
   fieldValue: { fontSize: 16, color: '#444', marginBottom: 4 },
@@ -414,13 +412,13 @@ const styles = StyleSheet.create({
   pickerContainer: { backgroundColor: '#f7f7f7', borderRadius: 12, borderWidth: 1, borderColor: '#e0e0e0', marginBottom: 16, justifyContent: 'center' },
   picker: { height: 55, width: '100%', color: '#333' },
   pickerItem: { 
-    fontSize: 16, // Para que el texto interno tenga el mismo tamaño
+    fontSize: 16,
   },
   addedItemsContainer: { marginVertical: 15, padding: 10, backgroundColor: '#f9f9f9', borderRadius: 8 },
   addedItemsTitle: { fontWeight: 'bold', marginBottom: 5 },
   addedItem: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 5 },
   addedItemText: { flex: 1 },
-  removeItemIcon: { // Nuevo estilo para el icono de eliminar repuesto en la modal
+  removeItemIcon: { 
     width: 22,
     height: 22,
     tintColor: '#dc3545',

@@ -1,9 +1,8 @@
-// frontend/screens/LoginScreen.js
+
 import React, { useState } from 'react';
 import {
   View,
   TextInput,
-  // Alert, // Eliminamos la importación de Alert
   StyleSheet,
   Text,
   Image,
@@ -11,11 +10,11 @@ import {
   SafeAreaView,
   KeyboardAvoidingView,
   Platform,
-  ActivityIndicator // Importamos ActivityIndicator
+  ActivityIndicator 
 } from 'react-native';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
-// No necesitamos Ionicons, lo eliminamos.
+
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
@@ -24,7 +23,7 @@ export default function LoginScreen({ navigation }) {
   const [contrasena, setContrasena] = useState('');
   const { login } = useAuth();
 
-  // --- NUEVOS ESTADOS PARA MANEJAR MENSAJES Y CARGA ---
+ 
   const [isLoading, setIsLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState({ type: '', text: '' });
 
@@ -47,13 +46,12 @@ export default function LoginScreen({ navigation }) {
 
   const handleLogin = async () => {
     if (!cedula || !contrasena) {
-      // Usamos el nuevo sistema de mensajes en lugar de Alert
       setStatusMessage({ type: 'error', text: 'Por favor ingrese su cédula y contraseña.' });
       return;
     }
 
     setIsLoading(true);
-    setStatusMessage({ type: '', text: '' }); // Limpiamos mensajes anteriores
+    setStatusMessage({ type: '', text: '' }); 
 
     try {
       const response = await axios.post(`${API_BASE_URL}/api/login`, {
@@ -62,12 +60,11 @@ export default function LoginScreen({ navigation }) {
       });
       const { usuario, token } = response.data;
       await login(usuario, token);
-      // El cambio de pantalla se maneja automáticamente por el contexto de autenticación
-      // No necesitamos un mensaje de éxito aquí, ya que la navegación ocurrirá
+
     } catch (error) {
       console.log(error.response?.data || error.message);
       const errorMessage = error.response?.data?.error || 'No se pudo iniciar sesión. Verifique sus credenciales.';
-      // Mostramos mensaje de error
+  
       setStatusMessage({ type: 'error', text: errorMessage });
     } finally {
       setIsLoading(false);
@@ -87,7 +84,7 @@ export default function LoginScreen({ navigation }) {
             <Text style={styles.subtitle}>Inicia sesión para continuar</Text>
           </View>
           
-          {/* --- ZONA DE MENSAJES DE ESTADO --- */}
+       
           {statusMessage.text ? (
             <View style={[
               styles.statusContainer,
@@ -181,7 +178,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#666',
     },
-    // Estilos para los mensajes de estado (copiados de otras pantallas)
+    
     statusContainer: {
         width: '100%',
         padding: 15,
@@ -201,7 +198,7 @@ const styles = StyleSheet.create({
     statusText: {
         fontSize: 16,
         fontWeight: '600',
-        color: '#155724', // Color de texto para éxito (se puede ajustar para error)
+        color: '#155724', 
     },
     inputContainer: {
         width: '100%',
@@ -215,10 +212,10 @@ const styles = StyleSheet.create({
         borderColor: '#e0e0e0',
     },
     inputIcon: {
-        width: 22, // Tamaño del icono
-        height: 22, // Tamaño del icono
+        width: 22, 
+        height: 22, 
         marginRight: 10,
-        tintColor: '#888', // tintColor funciona para cambiar el color de imágenes png
+        tintColor: '#888', 
     },
     input: {
         flex: 1,

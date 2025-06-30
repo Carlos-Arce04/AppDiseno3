@@ -6,18 +6,16 @@ import {
   FlatList,
   TouchableOpacity,
   StyleSheet,
-  // Eliminamos Alert completamente ya que lo reemplazaremos por mensajes de estado y un modal de confirmación
   TextInput,
   Modal,
   SafeAreaView,
-  ActivityIndicator, // Importamos ActivityIndicator
+  ActivityIndicator, 
   RefreshControl,
   Platform,
-  Image, // Asegúrate de importar Image
+  Image,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { useAuth } from '../context/AuthContext';
-// Eliminamos la importación de Ionicons ya que los reemplazaremos por imágenes PNG.
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
@@ -25,7 +23,7 @@ const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 const VehiculoItem = ({ item, onEdit, onDelete }) => (
   <View style={styles.card}>
     <View style={styles.cardHeader}>
-      {/* Icono de auto (car-sport) reemplazado por imagen PNG */}
+
       <Image source={require('../assets/car-icon.png')} style={styles.cardIcon} />
       <Text style={styles.cardTitle}>{item.placa}</Text>
     </View>
@@ -34,11 +32,11 @@ const VehiculoItem = ({ item, onEdit, onDelete }) => (
     </View>
     <View style={styles.cardFooter}>
       <TouchableOpacity style={styles.iconButton} onPress={onEdit}>
-        {/* Icono de lápiz (pencil) reemplazado por imagen PNG */}
+       
         <Image source={require('../assets/pencil-icon.png')} style={styles.cardActionButtonIcon} />
       </TouchableOpacity>
       <TouchableOpacity style={styles.iconButton} onPress={onDelete}>
-        {/* Icono de bote de basura (trash) reemplazado por imagen PNG */}
+     
         <Image source={require('../assets/trash-icon.png')} style={styles.cardActionButtonIcon} />
       </TouchableOpacity>
     </View>
@@ -51,18 +49,18 @@ export default function VehiculosScreen() {
   const [vehiculos, setVehiculos] = useState([]);
   const [usuarios, setUsuarios] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [modalVisible, setModalVisible] = useState(false); // Para modal de añadir/editar
+  const [modalVisible, setModalVisible] = useState(false); 
   const [formData, setFormData] = useState({ placa: '', marca: '', modelo: '' });
   const [propietarioSeleccionado, setPropietarioSeleccionado] = useState("");
   const [editing, setEditing] = useState(false);
 
-  // --- NUEVOS ESTADOS PARA MANEJAR MENSAJES Y CARGA EN LOS MODALS ---
+  
   const [isSaving, setIsSaving] = useState(false); // Para indicador de carga en guardar/actualizar
   const [isDeleting, setIsDeleting] = useState(false); // Para indicador de carga en eliminar
   const [modalStatus, setModalStatus] = useState({ type: '', text: '' }); // Para mensajes de estado en el modal de añadir/editar
   const [screenStatusMessage, setScreenStatusMessage] = useState({ type: '', text: '' }); // Para mensajes de estado en la pantalla principal
 
-  // --- NUEVOS ESTADOS PARA EL MODAL DE CONFIRMACIÓN DE ELIMINACIÓN ---
+  
   const [deleteConfirmModalVisible, setDeleteConfirmModalVisible] = useState(false);
   const [placaToDelete, setPlacaToDelete] = useState('');
 
@@ -192,13 +190,13 @@ export default function VehiculosScreen() {
       <View style={styles.header}>
         <Text style={styles.title}>Mis Vehículos</Text>
         <TouchableOpacity style={styles.addButton} onPress={openModalForNew}>
-          {/* Icono de añadir (add) reemplazado por imagen PNG */}
+    
           <Image source={require('../assets/add-icon.png')} style={styles.addButtonIcon} />
           <Text style={styles.addButtonText}>Nuevo Vehículo</Text>
         </TouchableOpacity>
       </View>
 
-      {/* --- ZONA DE MENSAJES DE ESTADO PARA LA PANTALLA PRINCIPAL --- */}
+    
       {screenStatusMessage.text ? (
         <View style={[
           styles.statusContainer,
@@ -227,13 +225,12 @@ export default function VehiculosScreen() {
         }
       />
 
-      {/* Modal para Añadir/Editar Vehículo */}
       <Modal visible={modalVisible} animationType="slide" transparent={true}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>{editing ? 'Editar Vehículo' : 'Nuevo Vehículo'}</Text>
             
-            {/* --- ZONA DE MENSAJES DE ESTADO DENTRO DEL MODAL --- */}
+        
             {modalStatus.text ? (
               <View style={[
                 styles.statusContainer,
@@ -273,7 +270,7 @@ export default function VehiculosScreen() {
                 <Picker
                   selectedValue={propietarioSeleccionado}
                   onValueChange={(itemValue) => setPropietarioSeleccionado(itemValue)}
-                  itemStyle={Platform.OS === 'ios' ? styles.pickerItem : {}} // Apply itemStyle conditionally for iOS
+                  itemStyle={Platform.OS === 'ios' ? styles.pickerItem : {}} 
                 >
                   <Picker.Item label="-- Seleccione propietario --" value="" />
                   {usuarios.map(u => (
@@ -295,7 +292,7 @@ export default function VehiculosScreen() {
         </View>
       </Modal>
 
-      {/* Modal de Confirmación de Eliminación Personalizado */}
+  
       <Modal visible={deleteConfirmModalVisible} animationType="fade" transparent={true}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
@@ -341,7 +338,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
   },
-  addButtonIcon: { // Estilo para el icono del botón "Nuevo Vehículo"
+  addButtonIcon: { 
     width: 24,
     height: 24,
     tintColor: '#fff',
@@ -368,7 +365,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 8,
   },
-  cardIcon: { // Estilo para el icono del auto en la tarjeta
+  cardIcon: { 
     width: 24,
     height: 24,
     tintColor: '#007bff',
@@ -398,10 +395,10 @@ const styles = StyleSheet.create({
     padding: 8,
     marginLeft: 15,
   },
-  cardActionButtonIcon: { // Estilo para los iconos de editar y borrar en la tarjeta
+  cardActionButtonIcon: { 
     width: 22,
     height: 22,
-    tintColor: '#555', // Color por defecto, se puede sobrescribir en el componente
+    tintColor: '#555', 
     resizeMode: 'contain',
   },
   emptyContainer: {
@@ -414,7 +411,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#888',
   },
-  // Modal Styles (para añadir/editar y confirmación)
+  
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -440,7 +437,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#333',
   },
-  modalText: { // Nuevo estilo para el texto de confirmación en el modal
+  modalText: { 
     fontSize: 16,
     color: '#444',
     textAlign: 'center',
@@ -468,7 +465,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     justifyContent: 'center',
   },
-  pickerItem: { // Estilo para los ítems del Picker (específico para iOS)
+  pickerItem: {
     fontSize: 16,
   },
   modalButtons: {
@@ -490,7 +487,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#007bff',
     marginLeft: 5,
   },
-  deleteButton: { // Estilo específico para el botón de eliminar en el modal de confirmación
+  deleteButton: { 
     backgroundColor: '#dc3545',
     marginLeft: 5,
   },
@@ -499,7 +496,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
   },
-  // Estilos para los mensajes de estado (copiados de otras pantallas)
+
   statusContainer: {
     width: '100%',
     padding: 15,
@@ -516,14 +513,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8d7da',
     borderColor: '#f5c6cb',
   },
-  infoContainer: { // Para mensajes informativos, si se llega a usar
+  infoContainer: { 
     backgroundColor: '#ffeeba',
     borderColor: '#ffecb5',
   },
   statusText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#155724', // Color de texto para éxito (se puede ajustar para error/info)
+    color: '#155724', 
     textAlign: 'center',
   },
 });

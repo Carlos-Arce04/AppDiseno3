@@ -1,4 +1,4 @@
-// frontend/screens/GenerarInformeScreen.js
+
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   View,
@@ -12,11 +12,11 @@ import {
   ActivityIndicator,
   RefreshControl,
   ScrollView,
-  Image // Asegúrate de importar Image
+  Image 
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { useAuth } from '../context/AuthContext';
-// Eliminamos la importación de Ionicons.
+
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
   header: { padding: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   title: { fontSize: 28, fontWeight: 'bold', color: '#333' },
   addButton: { flexDirection: 'row', backgroundColor: '#007bff', paddingVertical: 10, paddingHorizontal: 14, borderRadius: 8, alignItems: 'center' },
-  addButtonIcon: { // Estilo para el icono del botón "Generar"
+  addButtonIcon: { 
     width: 24,
     height: 24,
     tintColor: '#fff',
@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
   filtroTexto: { color: '#495057', fontWeight: '600' },
   filtroTextoActivo: { color: '#fff' },
   picker: { height: 55, width: '100%', color: '#333' },
-  pickerItem: { // Aplicar estilo a los ítems del Picker (solo para iOS)
+  pickerItem: { 
     fontSize: 16,
   },
   card: { backgroundColor: '#fff', borderRadius: 12, padding: 16, marginBottom: 16, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 4 },

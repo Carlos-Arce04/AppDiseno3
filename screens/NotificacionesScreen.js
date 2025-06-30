@@ -13,7 +13,7 @@ import { useAuth } from '../context/AuthContext';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
-// Función para obtener el color del estado, reutilizada de AdminCrearRevisionScreen
+// Función para obtener el color del estado
 const getStatusColor = (estado) => {
   switch (estado) {
     case 'entrega':
@@ -29,7 +29,7 @@ const getStatusColor = (estado) => {
   }
 };
 
-// --- COMPONENTE PARA CADA NOTIFICACIÓN EN LA LISTA ---
+//COMPONENTE PARA CADA NOTIFICACIÓN EN LA LISTA 
 const RevisionItem = ({ item, onPress }) => {
   const fecha = new Date(item.fecha_revision);
   const fechaFormateada = fecha.toLocaleDateString('es-ES', {
@@ -38,7 +38,7 @@ const RevisionItem = ({ item, onPress }) => {
 
   const statusColor = getStatusColor(item.estado);
 
-  // Función para formatear el estado para la visualización en el frontend
+  // Función para formatear el estado para la visualización 
   const formattedEstado = (estado) => {
     if (estado === 'en_espera') {
       return 'En espera';
@@ -126,23 +126,23 @@ export default function NotificacionesScreen({ navigation }) {
   const { axiosAuth } = useAuth();
   const [todasLasRevisiones, setTodasLasRevisiones] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [filtroEstado, setFiltroEstado] = useState('Todas'); // Renombrado de filtroActivo
-  const [filtroFecha, setFiltroFecha] = useState('siempre'); // Nuevo estado para filtro de fecha
-  const [filtrosVisibles, setFiltrosVisibles] = useState(false); // Estado para controlar visibilidad
+  const [filtroEstado, setFiltroEstado] = useState('Todas'); 
+  const [filtroFecha, setFiltroFecha] = useState('siempre'); 
+  const [filtrosVisibles, setFiltrosVisibles] = useState(false); 
 
-  // --- NUEVO ESTADO PARA MENSAJES DE ESTADO ---
+
   const [statusMessage, setStatusMessage] = useState({ type: '', text: '' });
 
   const fetchRevisiones = useCallback(async () => {
     setIsLoading(true);
-    setStatusMessage({ type: '', text: '' }); // Limpiar mensajes de estado al iniciar la carga
+    setStatusMessage({ type: '', text: '' }); 
     try {
       const { data } = await axiosAuth.get(`${API_BASE_URL}/api/revision`);
       setTodasLasRevisiones(data);
     } catch (error) {
       console.error("Error fetching notifications:", error.response?.data || error.message);
       const errorMessage = error.response?.data?.error || 'No se pudieron cargar las notificaciones.';
-      setStatusMessage({ type: 'error', text: errorMessage }); // Usar statusMessage
+      setStatusMessage({ type: 'error', text: errorMessage }); 
     } finally {
       setIsLoading(false);
     }
@@ -158,7 +158,7 @@ export default function NotificacionesScreen({ navigation }) {
   const revisionesFiltradas = useMemo(() => {
     let filteredByStatus = todasLasRevisiones;
     const estadoMapeado = {
-        'Pendientes': 'en_espera', // Mapear 'Pendientes' a 'en_espera'
+        'Pendientes': 'en_espera', 
         'En Reparación': 'reparacion',
         'Entrega': 'entrega',
         'Cancelado': 'cancelado',
@@ -205,7 +205,6 @@ export default function NotificacionesScreen({ navigation }) {
     <SafeAreaView style={styles.container}>
       <Text style={styles.headerTitle}>Todas las Notificaciones</Text>
 
-      {/* --- ZONA DE MENSAJES DE ESTADO --- */}
       {statusMessage.text ? (
         <View style={[
           styles.statusContainer,
@@ -215,7 +214,7 @@ export default function NotificacionesScreen({ navigation }) {
         </View>
       ) : null}
 
-      {/* --- BOTÓN PARA MOSTRAR/OCULTAR FILTROS --- */}
+     
       <TouchableOpacity 
         style={styles.toggleFiltroBoton}
         onPress={() => setFiltrosVisibles(!filtrosVisibles)}
@@ -225,7 +224,7 @@ export default function NotificacionesScreen({ navigation }) {
         </Text>
       </TouchableOpacity>
       
-      {/* --- RENDERIZADO CONDICIONAL DE LOS FILTROS --- */}
+     
       {filtrosVisibles && (
         <View>
           <FiltroEstadoTabs 
@@ -304,7 +303,7 @@ const styles = StyleSheet.create({
     color: '#aaa',
     marginTop: 4,
   },
-  // --- ESTILOS PARA EL BOTÓN DE MOSTRAR/OCULTAR ---
+  
   toggleFiltroBoton: {
     alignSelf: 'center',
     paddingVertical: 8,
@@ -320,13 +319,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: 14,
   },
-  // --- ESTILOS PARA LOS FILTROS ---
+ 
   filtroContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     flexWrap: 'wrap',
     paddingHorizontal: 16,
-    marginBottom: 16, // Espacio después de los filtros
+    marginBottom: 16, 
   },
   filtroBoton: {
     paddingVertical: 8,
@@ -403,10 +402,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: '600'
   },
-  // --- ESTILOS PARA MENSAJES DE ESTADO (COPIADOS DE OTRAS PANTALLAS) ---
+  // --- ESTILOS PARA MENSAJES DE ESTADO 
   statusContainer: {
     width: '90%',
-    alignSelf: 'center', // Centrar el mensaje
+    alignSelf: 'center', 
     padding: 15,
     borderRadius: 12,
     marginTop: 10,
@@ -422,14 +421,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8d7da',
     borderColor: '#f5c6cb',
   },
-  infoContainer: { // Para mensajes informativos, si se llega a usar
+  infoContainer: { 
     backgroundColor: '#ffeeba',
     borderColor: '#ffecb5',
   },
   statusText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#155724', // Color de texto para éxito (se puede ajustar para error/info)
+    color: '#155724', 
     textAlign: 'center',
   },
 });

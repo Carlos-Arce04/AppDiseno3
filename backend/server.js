@@ -505,12 +505,11 @@ app.put('/api/informes/:id/estado', authenticateToken, async (req, res) => {
   // Ahora esperamos tanto 'estado_factura' como 'signature'
   const { estado_factura, signature } = req.body;
 
-  // --- LOGS PARA DEPURACIÓN EN RAILWAY ---
   console.log(`\n--- PETICIÓN RECIBIDA: /api/informes/${informeId}/estado ---`);
   console.log(`   - ID del Informe: ${informeId}`);
   console.log(`   - Estado Recibido: ${estado_factura}`);
   console.log(`   - ¿Firma Recibida?: ${signature ? 'Sí, ' + signature.length + ' caracteres.' : 'No'}`);
-  // -----------------------------------------
+ 
 
   // Validación del estado de la factura
   if (!['pendiente', 'pagado'].includes(estado_factura)) {
@@ -525,8 +524,7 @@ app.put('/api/informes/:id/estado', authenticateToken, async (req, res) => {
   }
 
   try {
-    // Convierte la firma de formato base64 a un Buffer, que es el formato
-    // que PostgreSQL entiende para el tipo de dato BYTEA.
+    // Convierte la firma de formato base64 a un Buffer, que es el formato que PostgreSQL entiende para el tipo de dato BYTEA.
     const signatureBuffer = Buffer.from(signature, 'base64');
     console.log(`   - Buffer de la firma creado. Tamaño: ${signatureBuffer.length} bytes.`);
 

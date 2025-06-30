@@ -1,14 +1,13 @@
-// screens/ClienteInformesScreen.js
+
 import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { View, Text, FlatList, Alert, StyleSheet, Modal, TouchableOpacity, SafeAreaView } from 'react-native';
 import { useAuth } from '../context/AuthContext';
 import SignatureScreen from 'react-native-signature-canvas';
 
-// Accede a la variable de entorno
+
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
-// --- NUEVO DISEÑO ---
-// Estilos para el lienzo de la firma (ocultamos sus botones por defecto)
+
 const webStyle = `
   body, html {
     width: 100%;
@@ -32,7 +31,7 @@ const webStyle = `
   }
 `;
 
-// Componente para un solo informe en la lista
+
 const InformeItem = ({ item, onFirmar }) => (
   <View style={styles.itemContainer}>
     <View style={styles.itemHeader}>
@@ -58,8 +57,7 @@ const InformeItem = ({ item, onFirmar }) => (
   </View>
 );
 
-// --- COMPONENTE PARA LOS BOTONES DE FILTRO DE FECHA ---
-// Este componente fue copiado de AdminCrearRevisionScreen.js para mantener la coherencia.
+
 const FiltroFechaTabs = ({ filtroActivo, setFiltroActivo }) => {
     const opciones = [
         { key: 'siempre', label: 'Todas' },
@@ -101,7 +99,6 @@ export default function ClienteInformesScreen() {
     setIsLoading(true);
     try {
       const { data } = await axiosAuth.get(`${API_BASE_URL}/api/informes-cliente`);
-      // Suponiendo que cada informe tiene un campo 'fecha'
       setInformes(data);
     } catch (err) {
       console.error('Error fetching informes:', err);
@@ -115,7 +112,6 @@ export default function ClienteInformesScreen() {
     fetchInformes();
   }, []);
 
-  // Lógica de filtrado de informes basada en la fecha, replicando la de AdminCrearRevisionScreen
   const informesFiltrados = useMemo(() => {
     if (filtroFecha === 'siempre') return informes;
     const ahora = new Date();
@@ -127,15 +123,13 @@ export default function ClienteInformesScreen() {
       case 'mes': fechaLimite.setMonth(ahora.getMonth() - 1); break;
       default: return informes;
     }
-    // Asegurarse de que el informe tiene una fecha válida para comparar
-    // Se utiliza 'item.fecha' según la estructura de tu tabla 'informe'
     return informes.filter(i => i.fecha && new Date(i.fecha) >= fechaLimite);
   }, [informes, filtroFecha]);
 
   const handleAbrirFirma = (informe) => {
     setInformeSeleccionado(informe);
     setModalVisible(true);
-    setMessage({ type: '', text: '' }); // Limpiar mensajes al abrir modal
+    setMessage({ type: '', text: '' });
   };
 
   const handleCerrarFirma = () => {
@@ -143,7 +137,7 @@ export default function ClienteInformesScreen() {
     setInformeSeleccionado(null);
   };
 
-  // Esta función se llama desde el componente de firma cuando se confirma
+ 
   const handleSignatureOK = async (signature) => {
     if (!informeSeleccionado || !signature) {
       setMessage({ type: 'error', text: "Firma requerida: Por favor, firme en el recuadro para poder confirmar." });
@@ -167,24 +161,22 @@ export default function ClienteInformesScreen() {
       const errorMessage = err.response?.data?.error || 'No se pudo conectar con el servidor.';
       console.error("Error en la petición Axios:", errorMessage, err);
       setMessage({ type: 'error', text: errorMessage });
-      setTimeout(() => setMessage({ type: '', text: '' }), 5000); // Ocultar mensaje después de 5 segundos
+      setTimeout(() => setMessage({ type: '', text: '' }), 5000); 
     }
   };
 
-  // --- NUEVAS FUNCIONES PARA LOS BOTONES EXTERNOS ---
+
   const handleLimpiar = () => {
     signatureRef.current?.clearSignature();
-    setMessage({ type: '', text: '' }); // Limpiar mensajes al limpiar firma
+    setMessage({ type: '', text: '' }); 
   };
 
   const handleConfirmar = () => {
-    // Cuando se confirma, SignatureScreen llamará a onOK, que maneja el mensaje.
-    // Aquí solo aseguramos que el mensaje se borre si ya había uno.
     setMessage({ type: '', text: '' });
     signatureRef.current?.readSignature();
   };
 
-  if (isLoading && informes.length === 0) { // Mostrar cargando solo si no hay informes cargados aún
+  if (isLoading && informes.length === 0) { 
     return (
       <View style={styles.centered}>
         <Text>Cargando informes...</Text>
@@ -195,10 +187,9 @@ export default function ClienteInformesScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.headerTitle}>Mis Informes</Text>
-      {/* Nuevo filtro de fecha */}
+    
       <FiltroFechaTabs filtroActivo={filtroFecha} setFiltroActivo={setFiltroFecha} />
 
-      {/* Área para mostrar mensajes al usuario */}
       {message.text ? (
         <View style={[styles.messageContainer, message.type === 'success' ? styles.successMessage : styles.errorMessage]}>
           <Text style={styles.messageText}>{message.text}</Text>
@@ -209,7 +200,7 @@ export default function ClienteInformesScreen() {
       ) : null}
 
       <FlatList
-        data={informesFiltrados} // Ahora usamos los informes filtrados
+        data={informesFiltrados} 
         renderItem={({ item }) => <InformeItem item={item} onFirmar={handleAbrirFirma} />}
         keyExtractor={(item) => item.id.toString()}
         contentContainerStyle={styles.listContent}
@@ -231,8 +222,8 @@ export default function ClienteInformesScreen() {
             <Text style={styles.modalTitle}>Firma de Conformidad</Text>
             <Text style={styles.modalSubtitle}>Informe #{informeSeleccionado.id}</Text>
             
-            {/* Mostrar mensaje dentro del modal también si aplica */}
-            {message.text && message.type === 'error' ? ( // Solo errores dentro del modal de firma
+          
+            {message.text && message.type === 'error' ? ( 
               <View style={[styles.messageContainer, styles.errorMessage, { marginBottom: 15 }]}>
                 <Text style={styles.messageText}>{message.text}</Text>
                 <TouchableOpacity onPress={() => setMessage({ type: '', text: '' })} style={styles.closeMessageButton}>
@@ -250,7 +241,7 @@ export default function ClienteInformesScreen() {
               />
             </View>
 
-            {/* --- NUEVO LAYOUT DE BOTONES --- */}
+         
             <View style={styles.buttonContainer}>
               <TouchableOpacity style={[styles.button, styles.clearButton]} onPress={handleLimpiar}>
                   <Text style={styles.buttonText}>Limpiar</Text>
@@ -269,9 +260,9 @@ export default function ClienteInformesScreen() {
   );
 }
 
-// Hoja de estilos completa y reorganizada
+
 const styles = StyleSheet.create({
-  // Contenedores principales
+  
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
@@ -291,7 +282,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     color: '#333',
   },
-  // Estilos de cada item en la lista
+ 
   itemContainer: {
     backgroundColor: '#fff',
     borderRadius: 12,
@@ -355,7 +346,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 14,
   },
-  // Estilos del Modal
+ 
   modalView: {
     flex: 1,
     padding: 20,
@@ -378,7 +369,7 @@ const styles = StyleSheet.create({
     maxHeight: '60%',
     marginBottom: 20,
   },
-  // --- NUEVOS ESTILOS PARA LOS BOTONES ---
+ 
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -400,19 +391,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   clearButton: {
-    backgroundColor: '#6c757d', // Gris
+    backgroundColor: '#6c757d', 
     flex: 1,
     marginRight: 5,
   },
   confirmButton: {
-    backgroundColor: '#28a745', // Verde
+    backgroundColor: '#28a745', 
     flex: 1,
     marginLeft: 5,
   },
   cancelButton: {
-    backgroundColor: '#dc3545', // Rojo
+    backgroundColor: '#dc3545', 
   },
-  // --- ESTILOS DEL FILTRO DE FECHA (COPIADOS DE ADMINCREARREVISIONSCREEN) ---
+ 
   filtroContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
@@ -436,7 +427,7 @@ const styles = StyleSheet.create({
   filtroTextoActivo: {
     color: '#fff',
   },
-  // --- ESTILOS PARA MENSAJES DE USUARIO ---
+  
   messageContainer: {
     padding: 12,
     marginHorizontal: 16,
@@ -447,20 +438,20 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   successMessage: {
-    backgroundColor: '#d4edda', // Fondo verde claro
-    borderColor: '#28a745', // Borde verde
+    backgroundColor: '#d4edda', 
+    borderColor: '#28a745', 
     borderWidth: 1,
   },
   errorMessage: {
-    backgroundColor: '#f8d7da', // Fondo rojo claro
-    borderColor: '#dc3545', // Borde rojo
+    backgroundColor: '#f8d7da', 
+    borderColor: '#dc3545', 
     borderWidth: 1,
   },
   messageText: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#333', // Color de texto oscuro para contraste
-    flexShrink: 1, // Permite que el texto se ajuste
+    color: '#333', 
+    flexShrink: 1, 
   },
   closeMessageButton: {
     padding: 5,

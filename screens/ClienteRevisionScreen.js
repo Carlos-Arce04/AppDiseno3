@@ -1,28 +1,28 @@
-// frontend/screens/ClienteRevisionScreen.js
+
 import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ActivityIndicator,
-  SafeAreaView, // Añadimos SafeAreaView para mejor compatibilidad en iOS
-  ScrollView, // Añadimos ScrollView para permitir el desplazamiento en contenido largo
-  TouchableOpacity // Para botones personalizados
-  // Eliminamos Image ya que no se necesita para iconos aquí
+  SafeAreaView, 
+  ScrollView,
+  TouchableOpacity
+  
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_BASE_URL;
 
 export default function ClienteRevisionScreen({ route, navigation }) {
-  // Aceptamos tanto route.params.revisionId como route.params.id
+ 
   const revisionId = route.params?.revisionId ?? route.params?.id;
 
   const { axiosAuth } = useAuth();
   const [revision, setRevision] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [isProcessingDecision, setIsProcessingDecision] = useState(false); // Estado para el indicador de carga en botones
-  const [statusMessage, setStatusMessage] = useState({ type: '', text: '' }); // Estado para mensajes de estado (éxito/error/info)
+  const [isProcessingDecision, setIsProcessingDecision] = useState(false); 
+  const [statusMessage, setStatusMessage] = useState({ type: '', text: '' }); 
 
   // Función para obtener los detalles de la revisión
   const fetchRevision = useCallback(async () => {
@@ -35,7 +35,7 @@ export default function ClienteRevisionScreen({ route, navigation }) {
       setLoading(true);
       const res = await axiosAuth.get(`${API_BASE_URL}/api/revision/${revisionId}`);
       setRevision(res.data);
-      setStatusMessage({ type: '', text: '' }); // Limpiar cualquier mensaje de estado anterior al cargar
+      setStatusMessage({ type: '', text: '' }); 
     } catch (error) {
       console.error("Error fetching revision:", error.response?.data || error.message);
       const errorMessage = error.response?.data?.error || 'No se pudo cargar la revisión.';
@@ -45,7 +45,7 @@ export default function ClienteRevisionScreen({ route, navigation }) {
     }
   }, [axiosAuth, revisionId]);
 
-  // Efecto para cargar la revisión al montar el componente o cuando cambia el ID
+  
   useEffect(() => {
     fetchRevision();
   }, [fetchRevision]);
@@ -62,11 +62,11 @@ export default function ClienteRevisionScreen({ route, navigation }) {
       setStatusMessage({ type: 'info', text: 'La revisión se mantiene en espera.' });
       return; 
     } else {
-      return; // Decisión no válida
+      return; 
     }
 
-    setIsProcessingDecision(true); // Iniciar indicador de carga para el botón
-    setStatusMessage({ type: '', text: '' }); // Limpiar mensajes anteriores
+    setIsProcessingDecision(true); 
+    setStatusMessage({ type: '', text: '' }); 
 
     try {
       await axiosAuth.put(`${API_BASE_URL}/api/revision/${revisionId}`, {
@@ -81,11 +81,11 @@ export default function ClienteRevisionScreen({ route, navigation }) {
       const errorMessage = error.response?.data?.error || 'No se pudo registrar tu decisión.';
       setStatusMessage({ type: 'error', text: errorMessage });
     } finally {
-      setIsProcessingDecision(false); // Detener indicador de carga
+      setIsProcessingDecision(false); 
     }
   };
 
-  // Pantalla de carga mientras se obtienen los datos
+  
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -95,7 +95,7 @@ export default function ClienteRevisionScreen({ route, navigation }) {
     );
   }
 
-  // Pantalla cuando no se encuentra la revisión
+ 
   if (!revision) {
     return (
       <View style={styles.emptyContainer}>
@@ -115,18 +115,18 @@ export default function ClienteRevisionScreen({ route, navigation }) {
     );
   }
 
-  // Formatear fecha para visualización en la interfaz
+ 
   const fechaFormateada = new Date(revision.fecha_revision).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
-        {/* Cabecera de la pantalla (sin icono de retroceso, manteniendo la estructura original) */}
+    
         <View style={styles.header}>
           <Text style={styles.title}>Revisión #{revision.id}</Text>
         </View>
 
-        {/* Zona de mensajes de estado (éxito/error/info) */}
+
         {statusMessage.text ? (
           <View style={[
             styles.statusContainer,
@@ -136,7 +136,6 @@ export default function ClienteRevisionScreen({ route, navigation }) {
           </View>
         ) : null}
 
-        {/* Tarjeta con los detalles de la revisión */}
         <View style={styles.card}>
           <View style={styles.cardBody}>
             <Text style={styles.fieldLabel}>Placa:</Text>
@@ -155,7 +154,7 @@ export default function ClienteRevisionScreen({ route, navigation }) {
             <Text style={styles.fieldValue}>{fechaFormateada}</Text>
           </View>
 
-          {/* Sección de repuestos utilizados */}
+        
           {revision.repuestos_usados && revision.repuestos_usados.length > 0 ? (
             <View style={styles.repuestosContainer}>
               <Text style={styles.repuestosTitle}>Repuestos utilizados:</Text>
@@ -173,13 +172,13 @@ export default function ClienteRevisionScreen({ route, navigation }) {
           )}
         </View>
 
-        {/* Botones de acción para el cliente (solo si no ha respondido) */}
+      
         {!revision.respuesta_cliente && (
           <View style={styles.actionButtonsContainer}>
             <TouchableOpacity 
               style={[styles.actionButton, styles.continueButton]} 
               onPress={() => handleDecision('continuar')}
-              disabled={isProcessingDecision} // Deshabilitar mientras se procesa
+              disabled={isProcessingDecision} 
             >
               {isProcessingDecision ? (
                 <ActivityIndicator color="#fff" />
@@ -191,7 +190,7 @@ export default function ClienteRevisionScreen({ route, navigation }) {
             <TouchableOpacity 
               style={[styles.actionButton, styles.rejectButton]} 
               onPress={() => handleDecision('rechazar')}
-              disabled={isProcessingDecision} // Deshabilitar mientras se procesa
+              disabled={isProcessingDecision} 
             >
               {isProcessingDecision ? (
                 <ActivityIndicator color="#fff" />
@@ -203,7 +202,7 @@ export default function ClienteRevisionScreen({ route, navigation }) {
             <TouchableOpacity 
               style={[styles.actionButton, styles.pendingButton]} 
               onPress={() => handleDecision('en_espera')}
-              disabled={isProcessingDecision} // Deshabilitar mientras se procesa
+              disabled={isProcessingDecision} 
             >
               {isProcessingDecision ? (
                 <ActivityIndicator color="#fff" />
@@ -225,7 +224,7 @@ const styles = StyleSheet.create({
   },
   scrollViewContent: {
     flexGrow: 1,
-    paddingBottom: 20, // Espacio al final del scroll
+    paddingBottom: 20, 
   },
   loadingContainer: {
     flex: 1,
@@ -251,10 +250,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 20,
   },
-  // Estilos para los mensajes de estado
+  
   statusContainer: {
     width: '90%',
-    alignSelf: 'center', // Centrar el mensaje
+    alignSelf: 'center', 
     padding: 15,
     borderRadius: 12,
     marginTop: 10,
@@ -270,30 +269,30 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8d7da',
     borderColor: '#f5c6cb',
   },
-  infoContainer: { // Estilo para mensajes de información
+  infoContainer: { 
     backgroundColor: '#ffeeba',
     borderColor: '#ffecb5',
   },
   statusText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#155724', // Color de texto para éxito (ajustar para error/info si es necesario)
+    color: '#155724', 
     textAlign: 'center',
   },
-  // Cabecera de la pantalla (sin icono de retroceso)
+  
   header: {
     padding: 16,
     paddingTop: 20,
     paddingBottom: 10,
-    backgroundColor: '#f5f5f5', // O el color de fondo de la Safe Area
-    alignItems: 'center', // Centrar el título
+    backgroundColor: '#f5f5f5', 
+    alignItems: 'center', 
   },
   title: {
     fontSize: 26,
     fontWeight: 'bold',
     color: '#333',
   },
-  // Estilos de tarjeta para los detalles de la revisión
+ 
   card: {
     backgroundColor: '#fff',
     borderRadius: 12,
@@ -307,8 +306,7 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   cardBody: {
-    // Ya no hay cardHeader separado, los campos van directo en el body o se pueden agrupar
-    // Aquí puedes mantener los estilos de fieldLabel y fieldValue tal cual
+
   },
   fieldLabel: {
     fontSize: 15,
@@ -321,7 +319,7 @@ const styles = StyleSheet.create({
     color: '#333',
     marginBottom: 5,
   },
-  // Estilos para la sección de repuestos
+
   repuestosContainer: {
     borderTopWidth: 1,
     borderColor: '#f0f0f0',
@@ -360,7 +358,7 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     marginTop: 10,
   },
-  // Estilos para los botones de acción
+ 
   actionButtonsContainer: {
     marginHorizontal: 16,
     marginTop: 20,
@@ -371,7 +369,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 12, // Espacio entre botones
+    marginBottom: 12, 
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
@@ -384,15 +382,15 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   continueButton: {
-    backgroundColor: '#28a745', // Verde para continuar
+    backgroundColor: '#28a745', 
   },
   rejectButton: {
-    backgroundColor: '#dc3545', // Rojo para rechazar
+    backgroundColor: '#dc3545', 
   },
   pendingButton: {
-    backgroundColor: '#ffc107', // Amarillo para dejar en espera
+    backgroundColor: '#ffc107', 
   },
-  backButton: { // Estilo para el botón de "Volver" cuando no hay revisión (en emptyContainer)
+  backButton: { 
     marginTop: 20,
     backgroundColor: '#6c757d',
     padding: 12,
